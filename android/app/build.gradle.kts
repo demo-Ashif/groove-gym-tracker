@@ -6,7 +6,10 @@ plugins {
 }
 
 android {
-    namespace = "com.example.groove_gym_tracker"
+    // Reverse-DNS of the aether.lab domain (ADR §1.2). The namespace never
+    // carries a flavor suffix — only the application ID does, or R-class
+    // resolution breaks.
+    namespace = "lab.aether.groove"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,14 +23,34 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.groove_gym_tracker"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Permanent once published — Android will never allow a change.
+        applicationId = "lab.aether.groove"
+        // Android 8.0 (ADR: iOS 15+ / Android 8+, API 26).
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    // Three flavors installable side by side (ADR §16), so a real logging
+    // history can live on prod while dev is being broken.
+    flavorDimensions += "env"
+
+    productFlavors {
+        create("dev") {
+            dimension = "env"
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "Groove Dev")
+        }
+        create("stg") {
+            dimension = "env"
+            applicationIdSuffix = ".stg"
+            resValue("string", "app_name", "Groove Stg")
+        }
+        create("prod") {
+            dimension = "env"
+            resValue("string", "app_name", "Groove")
+        }
     }
 
     buildTypes {

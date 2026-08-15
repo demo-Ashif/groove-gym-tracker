@@ -51,6 +51,10 @@ app.*.map.json
 *.g.dart
 *.freezed.dart
 
+# Generated from lib/l10n/arb by gen_l10n. Regenerate with:
+#   flutter gen-l10n   (or any `flutter run`/`build`, via `generate: true`)
+/lib/l10n/generated/
+
 # FVM — pin (.fvm/fvm_config.json) is committed, the SDK symlink is not
 .fvm/flutter_sdk
 .fvm/versions
@@ -62,3 +66,5 @@ app.*.map.json
 
 # Claude Code local settings
 .claude/settings.local.json
+
+/docs/

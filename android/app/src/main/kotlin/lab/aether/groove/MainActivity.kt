@@ -1,4 +1,4 @@
-package com.example.groove_gym_tracker
+package lab.aether.groove
 
 import io.flutter.embedding.android.FlutterActivity
 

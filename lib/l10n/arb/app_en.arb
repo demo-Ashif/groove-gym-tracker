@@ -1,0 +1,1652 @@
+{
+  "@@locale": "en",
+  "appTagline": "Follow the plan. See the line move.",
+  "@appTagline": {
+    "description": "One-line product promise. Shown under the app name on the Profile tab."
+  },
+  "appTitle": "Groove",
+  "@appTitle": {
+    "description": "App name, shown in the OS task switcher and as the MaterialApp title. Not translated — it is a brand name."
+  },
+  "backupExport": "Export backup",
+  "@backupExport": {
+    "description": "Action that writes every table to a JSON file and offers to share it."
+  },
+  "backupExportDescription": "A full copy of your training as one JSON file.",
+  "@backupExportDescription": {
+    "description": "Explains what the export contains."
+  },
+  "backupExporting": "Preparing backup…",
+  "@backupExporting": {
+    "description": "Progress message while the export is being written."
+  },
+  "backupInvalid": "That file isn't a Groove backup.",
+  "@backupInvalid": {
+    "description": "Shown when the chosen file cannot be read."
+  },
+  "backupRestore": "Restore from backup",
+  "@backupRestore": {
+    "description": "Action that replaces local data with a chosen backup file."
+  },
+  "backupRestoreBody": "{count, plural, =1{1 row} other{{count} rows}} will replace everything currently on this device. This cannot be undone.",
+  "@backupRestoreBody": {
+    "description": "Confirmation body, stating exactly how much data is about to be swapped in.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupRestoreDescription": "Replaces everything on this device.",
+  "@backupRestoreDescription": {
+    "description": "Warns that a restore is destructive."
+  },
+  "backupRestoreTitle": "Restore this backup?",
+  "@backupRestoreTitle": {
+    "description": "Confirmation dialog title before a destructive restore."
+  },
+  "backupRestored": "{count, plural, =1{1 row restored} other{{count} rows restored}}",
+  "@backupRestored": {
+    "description": "Confirmation after a successful restore.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupShareSubject": "Groove backup",
+  "@backupShareSubject": {
+    "description": "Subject line when sharing the exported file."
+  },
+  "blockAddExercise": "Add exercise",
+  "@blockAddExercise": {
+    "description": "Action that appends an exercise slot to a block."
+  },
+  "blockCreateTitle": "New block",
+  "@blockCreateTitle": {
+    "description": "Title of the create-block sheet."
+  },
+  "blockDeleteBody": "Its exercises go with it.",
+  "@blockDeleteBody": {
+    "description": "Confirmation dialog body."
+  },
+  "blockDeleteTitle": "Delete this block?",
+  "@blockDeleteTitle": {
+    "description": "Confirmation dialog title."
+  },
+  "blockEditTitle": "Edit block",
+  "@blockEditTitle": {
+    "description": "Title of the edit-block sheet."
+  },
+  "blockKindConditioning": "Conditioning",
+  "@blockKindConditioning": {
+    "description": "Block kind — cardio and metabolic work."
+  },
+  "blockKindCooldown": "Cool-down",
+  "@blockKindCooldown": {
+    "description": "Block kind."
+  },
+  "blockKindCore": "Core",
+  "@blockKindCore": {
+    "description": "Block kind — trunk work."
+  },
+  "blockKindLabel": "Kind",
+  "@blockKindLabel": {
+    "description": "Label for the block-kind selector."
+  },
+  "blockKindMain": "Main",
+  "@blockKindMain": {
+    "description": "Block kind — the session's primary work."
+  },
+  "blockKindPlyo": "Plyometrics",
+  "@blockKindPlyo": {
+    "description": "Block kind — jumping and explosive work."
+  },
+  "blockKindWarmup": "Warm-up",
+  "@blockKindWarmup": {
+    "description": "Block kind."
+  },
+  "blockNoExercises": "No exercises yet",
+  "@blockNoExercises": {
+    "description": "Shown inside a block that has no exercise slots."
+  },
+  "blockTitleLabel": "Title",
+  "@blockTitleLabel": {
+    "description": "Text field label for a block title."
+  },
+  "commonAdd": "Add",
+  "@commonAdd": {
+    "description": "Generic add action on a sheet or dialog."
+  },
+  "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Dismisses a sheet or dialog without applying changes."
+  },
+  "commonCreate": "Create",
+  "@commonCreate": {
+    "description": "Confirms creating a new record."
+  },
+  "commonDelete": "Delete",
+  "@commonDelete": {
+    "description": "Confirms a destructive action. Kept short — it sits in a dialog next to Cancel."
+  },
+  "commonDone": "Done",
+  "@commonDone": {
+    "description": "Confirms and closes a sheet."
+  },
+  "commonEdit": "Edit",
+  "@commonEdit": {
+    "description": "Opens the editor for the item."
+  },
+  "commonMoveDown": "Move down",
+  "@commonMoveDown": {
+    "description": "Menu action that moves an item one position later in its list."
+  },
+  "commonMoveUp": "Move up",
+  "@commonMoveUp": {
+    "description": "Menu action that moves an item one position earlier in its list."
+  },
+  "commonReorderHandle": "Reorder",
+  "@commonReorderHandle": {
+    "description": "Accessibility label for a drag handle in a reorderable list."
+  },
+  "commonRetry": "Try again",
+  "@commonRetry": {
+    "description": "Button that re-runs a failed load."
+  },
+  "commonSave": "Save",
+  "@commonSave": {
+    "description": "Confirms an edit."
+  },
+  "envDev": "Development",
+  "@envDev": {
+    "description": "Name of the dev build flavor, shown in the Profile > About row."
+  },
+  "envProd": "Production",
+  "@envProd": {
+    "description": "Name of the production build flavor, shown in the Profile > About row."
+  },
+  "envStg": "Staging",
+  "@envStg": {
+    "description": "Name of the staging build flavor, shown in the Profile > About row."
+  },
+  "exAbWheelRollout": "Ab wheel rollout",
+  "@exAbWheelRollout": {
+    "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exAnkleMobilisation": "Ankle mobilisation",
+  "@exAnkleMobilisation": {
+    "description": "Exercise catalog entry (mobility). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exArnoldPress": "Arnold press",
+  "@exArnoldPress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exAssaultBike": "Assault bike",
+  "@exAssaultBike": {
+    "description": "Exercise catalog entry (conditioning). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBackExtension": "Back extension",
+  "@exBackExtension": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBackSquat": "Back squat",
+  "@exBackSquat": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBandPullApart": "Band pull-apart",
+  "@exBandPullApart": {
+    "description": "Exercise catalog entry (mobility). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBarbellRow": "Barbell row",
+  "@exBarbellRow": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBattleRopes": "Battle ropes",
+  "@exBattleRopes": {
+    "description": "Exercise catalog entry (conditioning). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBeltSquat": "Belt squat",
+  "@exBeltSquat": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBenchPress": "Bench press",
+  "@exBenchPress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBicepCurl": "Biceps curl",
+  "@exBicepCurl": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBirdDog": "Bird dog",
+  "@exBirdDog": {
+    "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBounding": "Bounding",
+  "@exBounding": {
+    "description": "Exercise catalog entry (plyo). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBoxJump": "Box jump",
+  "@exBoxJump": {
+    "description": "Exercise catalog entry (plyo). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBoxSquat": "Box squat",
+  "@exBoxSquat": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBroadJump": "Broad jump",
+  "@exBroadJump": {
+    "description": "Exercise catalog entry (plyo). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exBulgarianSplitSquat": "Bulgarian split squat",
+  "@exBulgarianSplitSquat": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exCableChestFly": "Cable chest fly",
+  "@exCableChestFly": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exCableCrunch": "Cable crunch",
+  "@exCableCrunch": {
+    "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exCableCurl": "Cable curl",
+  "@exCableCurl": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exCablePullThrough": "Cable pull-through",
+  "@exCablePullThrough": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exCableWoodchop": "Cable woodchop",
+  "@exCableWoodchop": {
+    "description": "Exercise catalog entry (rotation). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exCatCow": "Cat-cow",
+  "@exCatCow": {
+    "description": "Exercise catalog entry (mobility). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exChestSupportedRow": "Chest-supported row",
+  "@exChestSupportedRow": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exChinUp": "Chin-up",
+  "@exChinUp": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exCloseGripBenchPress": "Close-grip bench press",
+  "@exCloseGripBenchPress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exCloseGripLatPulldown": "Close-grip lat pulldown",
+  "@exCloseGripLatPulldown": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exConventionalDeadlift": "Deadlift",
+  "@exConventionalDeadlift": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exCopenhagenPlank": "Copenhagen plank",
+  "@exCopenhagenPlank": {
+    "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exDeadBug": "Dead bug",
+  "@exDeadBug": {
+    "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exDeadHang": "Dead hang",
+  "@exDeadHang": {
+    "description": "Exercise catalog entry (mobility). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exDeclineBenchPress": "Decline bench press",
+  "@exDeclineBenchPress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exDepthJump": "Depth jump",
+  "@exDepthJump": {
+    "description": "Exercise catalog entry (plyo). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exDip": "Dip",
+  "@exDip": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exDumbbellBenchPress": "Dumbbell bench press",
+  "@exDumbbellBenchPress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exDumbbellRow": "Dumbbell row",
+  "@exDumbbellRow": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exFacePull": "Face pull",
+  "@exFacePull": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exFarmersCarry": "Farmer's carry",
+  "@exFarmersCarry": {
+    "description": "Exercise catalog entry (carry). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exFrontRackCarry": "Front rack carry",
+  "@exFrontRackCarry": {
+    "description": "Exercise catalog entry (carry). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exFrontRaise": "Front raise",
+  "@exFrontRaise": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exFrontSquat": "Front squat",
+  "@exFrontSquat": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exGluteBridge": "Glute bridge",
+  "@exGluteBridge": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exGluteBridgeMarch": "Glute bridge march",
+  "@exGluteBridgeMarch": {
+    "description": "Exercise catalog entry (mobility). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exGobletSquat": "Goblet squat",
+  "@exGobletSquat": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exGoodMorning": "Good morning",
+  "@exGoodMorning": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exHackSquat": "Hack squat",
+  "@exHackSquat": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exHammerCurl": "Hammer curl",
+  "@exHammerCurl": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exHangingLegRaise": "Hanging leg raise",
+  "@exHangingLegRaise": {
+    "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exHipFlexorStretch": "Hip flexor stretch",
+  "@exHipFlexorStretch": {
+    "description": "Exercise catalog entry (mobility). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exHipThrust": "Hip thrust",
+  "@exHipThrust": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exHollowHold": "Hollow hold",
+  "@exHollowHold": {
+    "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exInclineBenchPress": "Incline bench press",
+  "@exInclineBenchPress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exInclineDumbbellCurl": "Incline dumbbell curl",
+  "@exInclineDumbbellCurl": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exInclineDumbbellPress": "Incline dumbbell press",
+  "@exInclineDumbbellPress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exInclineTreadmillWalk": "Incline treadmill walk",
+  "@exInclineTreadmillWalk": {
+    "description": "Exercise catalog entry (conditioning). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exInvertedRow": "Inverted row",
+  "@exInvertedRow": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exJumpRope": "Jump rope",
+  "@exJumpRope": {
+    "description": "Exercise catalog entry (conditioning). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exJumpSquat": "Jump squat",
+  "@exJumpSquat": {
+    "description": "Exercise catalog entry (plyo). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exKettlebellSwing": "Kettlebell swing",
+  "@exKettlebellSwing": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exLandminePress": "Landmine press",
+  "@exLandminePress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exLandmineRotation": "Landmine rotation",
+  "@exLandmineRotation": {
+    "description": "Exercise catalog entry (rotation). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exLatPulldown": "Lat pulldown",
+  "@exLatPulldown": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exLateralRaise": "Lateral raise",
+  "@exLateralRaise": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exLegExtension": "Leg extension",
+  "@exLegExtension": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exLegPress": "Leg press",
+  "@exLegPress": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exLyingLegCurl": "Lying leg curl",
+  "@exLyingLegCurl": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exMachineChestPress": "Machine chest press",
+  "@exMachineChestPress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exMachineRow": "Machine row",
+  "@exMachineRow": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exMachineShoulderPress": "Machine shoulder press",
+  "@exMachineShoulderPress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exMedicineBallRotationalThrow": "Medicine ball rotational throw",
+  "@exMedicineBallRotationalThrow": {
+    "description": "Exercise catalog entry (rotation). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exMedicineBallSlam": "Medicine ball slam",
+  "@exMedicineBallSlam": {
+    "description": "Exercise catalog entry (plyo). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exNinetyNinetyHipSwitch": "90/90 hip switch",
+  "@exNinetyNinetyHipSwitch": {
+    "description": "Exercise catalog entry (mobility). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exNordicCurl": "Nordic curl",
+  "@exNordicCurl": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exOverheadCarry": "Overhead carry",
+  "@exOverheadCarry": {
+    "description": "Exercise catalog entry (carry). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exOverheadPress": "Overhead press",
+  "@exOverheadPress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exOverheadTricepExtension": "Overhead triceps extension",
+  "@exOverheadTricepExtension": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exPallofPress": "Pallof press",
+  "@exPallofPress": {
+    "description": "Exercise catalog entry (rotation). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exPecDeck": "Pec deck",
+  "@exPecDeck": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exPendlayRow": "Pendlay row",
+  "@exPendlayRow": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exPistolSquat": "Pistol squat",
+  "@exPistolSquat": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exPlank": "Plank",
+  "@exPlank": {
+    "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exPreacherCurl": "Preacher curl",
+  "@exPreacherCurl": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exPullUp": "Pull-up",
+  "@exPullUp": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exPushUp": "Push-up",
+  "@exPushUp": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exRackPull": "Rack pull",
+  "@exRackPull": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exReverseCrunch": "Reverse crunch",
+  "@exReverseCrunch": {
+    "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exReverseFly": "Reverse fly",
+  "@exReverseFly": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exReverseLunge": "Reverse lunge",
+  "@exReverseLunge": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exRomanianDeadlift": "Romanian deadlift",
+  "@exRomanianDeadlift": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exRotaryTorsoMachine": "Rotary torso machine",
+  "@exRotaryTorsoMachine": {
+    "description": "Exercise catalog entry (rotation). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exRowingErg": "Rowing machine",
+  "@exRowingErg": {
+    "description": "Exercise catalog entry (conditioning). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exRussianTwist": "Russian twist",
+  "@exRussianTwist": {
+    "description": "Exercise catalog entry (rotation). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSeatedCableRow": "Seated cable row",
+  "@exSeatedCableRow": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSeatedDumbbellShoulderPress": "Seated dumbbell shoulder press",
+  "@exSeatedDumbbellShoulderPress": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSeatedLegCurl": "Seated leg curl",
+  "@exSeatedLegCurl": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exShoulderDislocate": "Shoulder dislocate",
+  "@exShoulderDislocate": {
+    "description": "Exercise catalog entry (mobility). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exShrug": "Shrug",
+  "@exShrug": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSidePlank": "Side plank",
+  "@exSidePlank": {
+    "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSingleLegRdl": "Single-leg RDL",
+  "@exSingleLegRdl": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSissySquat": "Sissy squat",
+  "@exSissySquat": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSkullcrusher": "Skullcrusher",
+  "@exSkullcrusher": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSledDrag": "Sled drag",
+  "@exSledDrag": {
+    "description": "Exercise catalog entry (carry). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSledPush": "Sled push",
+  "@exSledPush": {
+    "description": "Exercise catalog entry (carry). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSledSprint": "Sled sprint",
+  "@exSledSprint": {
+    "description": "Exercise catalog entry (conditioning). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSplitJump": "Split jump",
+  "@exSplitJump": {
+    "description": "Exercise catalog entry (plyo). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSplitSquat": "Split squat",
+  "@exSplitSquat": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exStairmaster": "Stairmaster",
+  "@exStairmaster": {
+    "description": "Exercise catalog entry (conditioning). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exStationaryBike": "Stationary bike",
+  "@exStationaryBike": {
+    "description": "Exercise catalog entry (conditioning). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exStepUp": "Step-up",
+  "@exStepUp": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exStraightArmPulldown": "Straight-arm pulldown",
+  "@exStraightArmPulldown": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSuitcaseCarry": "Suitcase carry",
+  "@exSuitcaseCarry": {
+    "description": "Exercise catalog entry (carry). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSumoDeadlift": "Sumo deadlift",
+  "@exSumoDeadlift": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exSwimming": "Swimming",
+  "@exSwimming": {
+    "description": "Exercise catalog entry (conditioning). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exTBarRow": "T-bar row",
+  "@exTBarRow": {
+    "description": "Exercise catalog entry (pull). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exThoracicRotation": "Thoracic rotation",
+  "@exThoracicRotation": {
+    "description": "Exercise catalog entry (mobility). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exTrapBarDeadlift": "Trap bar deadlift",
+  "@exTrapBarDeadlift": {
+    "description": "Exercise catalog entry (hinge). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exTreadmillRun": "Treadmill run",
+  "@exTreadmillRun": {
+    "description": "Exercise catalog entry (conditioning). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exTricepPushdown": "Triceps pushdown",
+  "@exTricepPushdown": {
+    "description": "Exercise catalog entry (push). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exWalkingLunge": "Walking lunge",
+  "@exWalkingLunge": {
+    "description": "Exercise catalog entry (squat). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exWeightedSitUp": "Weighted sit-up",
+  "@exWeightedSitUp": {
+    "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "exWorldsGreatestStretch": "World's greatest stretch",
+  "@exWorldsGreatestStretch": {
+    "description": "Exercise catalog entry (mobility). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
+  "finalizeConfirm": "Finish",
+  "@finalizeConfirm": {
+    "description": "Confirms finalizing the session."
+  },
+  "finalizeEffortLabel": "How hard was it?",
+  "@finalizeEffortLabel": {
+    "description": "Label above the session RPE dots."
+  },
+  "finalizeEnergyLabel": "Energy",
+  "@finalizeEnergyLabel": {
+    "description": "Label above the five energy faces."
+  },
+  "finalizeNoteHint": "Anything worth remembering",
+  "@finalizeNoteHint": {
+    "description": "Placeholder in the session note field."
+  },
+  "finalizeNoteLabel": "Note",
+  "@finalizeNoteLabel": {
+    "description": "Label for the optional free-text note on the finalize sheet."
+  },
+  "finalizeTitle": "Finish session",
+  "@finalizeTitle": {
+    "description": "Title of the finalize sheet."
+  },
+  "insightsPlaceholderBody": "Charts need history. Log a few sessions and adherence, body weight and strength trends fill in here.",
+  "@insightsPlaceholderBody": {
+    "description": "Body copy on the Insights tab before any analytics screens exist."
+  },
+  "insightsPlaceholderTitle": "Nothing to plot yet",
+  "@insightsPlaceholderTitle": {
+    "description": "Title of the Insights tab placeholder state."
+  },
+  "insightsTitle": "Insights",
+  "@insightsTitle": {
+    "description": "Screen title for the Insights tab."
+  },
+  "navInsights": "Insights",
+  "@navInsights": {
+    "description": "Bottom navigation label for the Insights tab. Keep short — it sits under a 24dp icon."
+  },
+  "navPlan": "Plan",
+  "@navPlan": {
+    "description": "Bottom navigation label for the Plan tab (the program and its calendar). Keep short."
+  },
+  "navProfile": "Profile",
+  "@navProfile": {
+    "description": "Bottom navigation label for the Profile tab (preferences and about). Keep short."
+  },
+  "navToday": "Today",
+  "@navToday": {
+    "description": "Bottom navigation label for the Today tab. Keep short."
+  },
+  "patternCarry": "Carry",
+  "@patternCarry": {
+    "description": "Movement pattern group heading in the exercise picker (carry)."
+  },
+  "patternConditioning": "Conditioning",
+  "@patternConditioning": {
+    "description": "Movement pattern group heading in the exercise picker (conditioning)."
+  },
+  "patternCore": "Core",
+  "@patternCore": {
+    "description": "Movement pattern group heading in the exercise picker (core)."
+  },
+  "patternHinge": "Hinge",
+  "@patternHinge": {
+    "description": "Movement pattern group heading in the exercise picker (hinge)."
+  },
+  "patternMobility": "Mobility",
+  "@patternMobility": {
+    "description": "Movement pattern group heading in the exercise picker (mobility)."
+  },
+  "patternPlyo": "Plyometrics",
+  "@patternPlyo": {
+    "description": "Movement pattern group heading in the exercise picker (plyometrics)."
+  },
+  "patternPull": "Pull",
+  "@patternPull": {
+    "description": "Movement pattern group heading in the exercise picker (pull)."
+  },
+  "patternPush": "Push",
+  "@patternPush": {
+    "description": "Movement pattern group heading in the exercise picker (push)."
+  },
+  "patternRotation": "Rotation",
+  "@patternRotation": {
+    "description": "Movement pattern group heading in the exercise picker (rotation)."
+  },
+  "patternSquat": "Squat",
+  "@patternSquat": {
+    "description": "Movement pattern group heading in the exercise picker (squat)."
+  },
+  "phaseAddSession": "Add day",
+  "@phaseAddSession": {
+    "description": "Action that appends a session template to a phase."
+  },
+  "phaseCreateTitle": "New phase",
+  "@phaseCreateTitle": {
+    "description": "Title of the create-phase sheet."
+  },
+  "phaseDeleteBody": "Its days, blocks and exercises go with it.",
+  "@phaseDeleteBody": {
+    "description": "Confirmation dialog body — states the cascade plainly."
+  },
+  "phaseDeleteTitle": "Delete this phase?",
+  "@phaseDeleteTitle": {
+    "description": "Confirmation dialog title."
+  },
+  "phaseEditTitle": "Edit phase",
+  "@phaseEditTitle": {
+    "description": "Title of the edit-phase sheet."
+  },
+  "phaseEndWeekLabel": "End week",
+  "@phaseEndWeekLabel": {
+    "description": "Last program week this phase covers."
+  },
+  "phaseNameHint": "Cycle 1 — Foundation",
+  "@phaseNameHint": {
+    "description": "Placeholder in the phase name field."
+  },
+  "phaseNameLabel": "Name",
+  "@phaseNameLabel": {
+    "description": "Text field label for a phase name."
+  },
+  "phaseNoSessions": "No days yet",
+  "@phaseNoSessions": {
+    "description": "Shown inside a phase that has no session templates."
+  },
+  "phaseStartWeekLabel": "Start week",
+  "@phaseStartWeekLabel": {
+    "description": "First program week this phase covers."
+  },
+  "phaseWeekRange": "Weeks {start}–{end}",
+  "@phaseWeekRange": {
+    "description": "Subtitle on a phase row. Uses an en dash, not a hyphen.",
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "pickerCreateNamed": "Create “{name}”",
+  "@pickerCreateNamed": {
+    "description": "Action that adds the typed text as a new custom exercise.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Zercher squat"
+      }
+    }
+  },
+  "pickerNoResultsBody": "Try a different spelling, or add it to your catalog.",
+  "@pickerNoResultsBody": {
+    "description": "Empty state body in the picker."
+  },
+  "pickerNoResultsTitle": "No match",
+  "@pickerNoResultsTitle": {
+    "description": "Empty state when a search returns nothing."
+  },
+  "pickerSearchHint": "Search exercises",
+  "@pickerSearchHint": {
+    "description": "Placeholder in the picker's search field."
+  },
+  "pickerTitle": "Choose an exercise",
+  "@pickerTitle": {
+    "description": "Title of the exercise picker sheet."
+  },
+  "placeholderRoadmap": "Arrives in {milestone}",
+  "@placeholderRoadmap": {
+    "description": "Badge on a screen whose real content lands in a later build milestone. One message with a placeholder rather than concatenation, because word order differs by language.",
+    "placeholders": {
+      "milestone": {
+        "type": "String",
+        "example": "Phase 1"
+      }
+    }
+  },
+  "planActiveBadge": "Active",
+  "@planActiveBadge": {
+    "description": "Badge on the one program Today reads from."
+  },
+  "planCreateProgram": "New program",
+  "@planCreateProgram": {
+    "description": "Primary action on the Plan tab."
+  },
+  "planPlaceholderBody": "Paste, dictate or build a program. Groove turns it into a day-by-day schedule you tap through.",
+  "@planPlaceholderBody": {
+    "description": "Body copy on the Plan tab before the program builder exists."
+  },
+  "planPlaceholderTitle": "No program yet",
+  "@planPlaceholderTitle": {
+    "description": "Title of the Plan tab placeholder state."
+  },
+  "planSessionCount": "{count, plural, =0{No days} =1{1 day} other{{count} days}}",
+  "@planSessionCount": {
+    "description": "How many training days a program prescribes, on its card. 'Day' here means one session template, e.g. Day A.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planStartsOn": "Starts {date}",
+  "@planStartsOn": {
+    "description": "Subtitle on a program card.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Sun, 16 Aug"
+      }
+    }
+  },
+  "planTitle": "Plan",
+  "@planTitle": {
+    "description": "Screen title for the Plan tab."
+  },
+  "planWeekCount": "{count, plural, =0{No weeks planned} =1{1 week} other{{count} weeks}}",
+  "@planWeekCount": {
+    "description": "Length of a program, on its card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileAboutEnvironment": "Environment",
+  "@profileAboutEnvironment": {
+    "description": "Label of the row showing which build flavor is running."
+  },
+  "profileAboutVersion": "Version",
+  "@profileAboutVersion": {
+    "description": "Label of the row showing the app version."
+  },
+  "profileHapticsDescription": "Taps, steppers and completions give a light physical tick.",
+  "@profileHapticsDescription": {
+    "description": "Explains what the haptics toggle controls."
+  },
+  "profileHapticsLabel": "Haptics",
+  "@profileHapticsLabel": {
+    "description": "Label of the switch that enables or disables vibration feedback app-wide."
+  },
+  "profileLanguageLabel": "Language",
+  "@profileLanguageLabel": {
+    "description": "Label of the row that picks the app language."
+  },
+  "profileLanguageSystem": "Match device",
+  "@profileLanguageSystem": {
+    "description": "Language option meaning: follow whatever language the phone is set to."
+  },
+  "profileSectionAbout": "About",
+  "@profileSectionAbout": {
+    "description": "Heading above the version and environment rows on the Profile tab."
+  },
+  "profileSectionAppearance": "Appearance",
+  "@profileSectionAppearance": {
+    "description": "Heading above the theme and haptics controls on the Profile tab."
+  },
+  "profileSectionData": "Your data",
+  "@profileSectionData": {
+    "description": "Heading above the export and restore rows on the Profile tab."
+  },
+  "profileSectionLanguage": "Language",
+  "@profileSectionLanguage": {
+    "description": "Heading above the language picker on the Profile tab."
+  },
+  "profileThemeDark": "Dark",
+  "@profileThemeDark": {
+    "description": "Theme option: always use the dark theme."
+  },
+  "profileThemeLabel": "Theme",
+  "@profileThemeLabel": {
+    "description": "Label of the light/dark/system theme selector."
+  },
+  "profileThemeLight": "Light",
+  "@profileThemeLight": {
+    "description": "Theme option: always use the light theme."
+  },
+  "profileThemeSystem": "System",
+  "@profileThemeSystem": {
+    "description": "Theme option: follow the device's light/dark setting."
+  },
+  "profileTitle": "Profile",
+  "@profileTitle": {
+    "description": "Screen title for the Profile tab."
+  },
+  "programActiveNote": "Today reads from this program.",
+  "@programActiveNote": {
+    "description": "Explains what the active badge means."
+  },
+  "programAddPhase": "Add phase",
+  "@programAddPhase": {
+    "description": "Action that appends a phase to a program."
+  },
+  "programCreateTitle": "New program",
+  "@programCreateTitle": {
+    "description": "Title of the create-program sheet."
+  },
+  "programDeleteBody": "It disappears from your plans. Sessions you already logged stay.",
+  "@programDeleteBody": {
+    "description": "Confirmation dialog body. Reassures that history is never destroyed."
+  },
+  "programDeleteTitle": "Delete this program?",
+  "@programDeleteTitle": {
+    "description": "Confirmation dialog title."
+  },
+  "programEditTitle": "Edit program",
+  "@programEditTitle": {
+    "description": "Title of the edit-program sheet."
+  },
+  "programNameHint": "Ten week block",
+  "@programNameHint": {
+    "description": "Placeholder text in the program name field. An example, not a default."
+  },
+  "programNameLabel": "Name",
+  "@programNameLabel": {
+    "description": "Text field label for a program's name."
+  },
+  "programNoPhasesBody": "A phase is a run of weeks with its own targets — Cycle 1, Cycle 2.",
+  "@programNoPhasesBody": {
+    "description": "Empty state body explaining what a phase is for."
+  },
+  "programNoPhasesTitle": "No phases yet",
+  "@programNoPhasesTitle": {
+    "description": "Empty state title in the program editor."
+  },
+  "programPhasesSection": "Phases",
+  "@programPhasesSection": {
+    "description": "Section heading above the phase list in the program editor."
+  },
+  "programSetActive": "Make active",
+  "@programSetActive": {
+    "description": "Action that makes this the program Today reads from."
+  },
+  "programStartDateLabel": "Start date",
+  "@programStartDateLabel": {
+    "description": "Label for the date picker row when creating a program."
+  },
+  "progressionDouble": "Double progression",
+  "@progressionDouble": {
+    "description": "Progression option: add reps to the top of the range, then add load."
+  },
+  "progressionDoubleDetail": "{min}–{max} reps, then +{increment} kg",
+  "@progressionDoubleDetail": {
+    "description": "Summary of a double progression rule.",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "increment": {
+        "type": "String",
+        "example": "2.5"
+      }
+    }
+  },
+  "progressionFixed": "As written",
+  "@progressionFixed": {
+    "description": "Progression option: targets stay where the plan put them."
+  },
+  "progressionLinearWeekly": "Linear",
+  "@progressionLinearWeekly": {
+    "description": "Progression option: add load every week."
+  },
+  "progressionLinearWeeklyDetail": "+{increment} kg each week",
+  "@progressionLinearWeeklyDetail": {
+    "description": "Summary of a linear progression rule.",
+    "placeholders": {
+      "increment": {
+        "type": "String",
+        "example": "2.5"
+      }
+    }
+  },
+  "progressionTopSetBackoff": "Top set + back-off",
+  "@progressionTopSetBackoff": {
+    "description": "Progression option: one heavy set, then lighter sets."
+  },
+  "progressionTopSetBackoffDetail": "{count} back-off sets at {percent}",
+  "@progressionTopSetBackoffDetail": {
+    "description": "Summary of a top-set/back-off rule.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "percent": {
+        "type": "String",
+        "example": "85%"
+      }
+    }
+  },
+  "restSkip": "Skip",
+  "@restSkip": {
+    "description": "Dismisses the running rest timer."
+  },
+  "restTimerLabel": "Rest",
+  "@restTimerLabel": {
+    "description": "Label on the rest-timer bar."
+  },
+  "routeNotFoundAction": "Go to Today",
+  "@routeNotFoundAction": {
+    "description": "Button on the 404 screen that returns the user to the Today tab."
+  },
+  "routeNotFoundTitle": "We couldn't find that screen",
+  "@routeNotFoundTitle": {
+    "description": "Title of the screen shown when a deep link points at an unknown route."
+  },
+  "scheduleAssignTitle": "{weekday}",
+  "@scheduleAssignTitle": {
+    "description": "Title of the sheet that assigns a day, showing the weekday being edited.",
+    "placeholders": {
+      "weekday": {
+        "type": "String",
+        "example": "Sunday"
+      }
+    }
+  },
+  "scheduleCommit": "Commit schedule",
+  "@scheduleCommit": {
+    "description": "Primary action that materializes the calendar for the first time."
+  },
+  "scheduleCommitted": "{added, plural, =0{No days added} =1{1 day added} other{{added} days added}}",
+  "@scheduleCommitted": {
+    "description": "Confirmation after committing a schedule.",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      }
+    }
+  },
+  "scheduleCricket": "Cricket",
+  "@scheduleCricket": {
+    "description": "Day assignment: a cricket match or practice, which takes priority over a gym session."
+  },
+  "scheduleCricketCount": "{count, plural, =0{No cricket} =1{1 cricket day} other{{count} cricket days}}",
+  "@scheduleCricketCount": {
+    "description": "How many cricket days the current week pattern contains.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scheduleCustom": "Custom",
+  "@scheduleCustom": {
+    "description": "Day assignment: some other activity, logged loosely."
+  },
+  "scheduleDayCount": "{count, plural, =0{No days scheduled} =1{1 day scheduled} other{{count} days scheduled}}",
+  "@scheduleDayCount": {
+    "description": "How many dated days the committed calendar holds.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scheduleGymCount": "{count, plural, =0{No gym days} =1{1 gym day} other{{count} gym days}}",
+  "@scheduleGymCount": {
+    "description": "How many gym days the current week pattern contains.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scheduleGymDay": "Day {code}",
+  "@scheduleGymDay": {
+    "description": "Day assignment naming a session template by its code, e.g. Day A.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "A"
+      }
+    }
+  },
+  "scheduleMissingNote": "Days a phase doesn't define become rest days.",
+  "@scheduleMissingNote": {
+    "description": "Explains what happens when the week strip names a session code that some phase has no template for."
+  },
+  "scheduleNoSessions": "Add a training day to a phase first.",
+  "@scheduleNoSessions": {
+    "description": "Shown in the assign sheet when the program has no session templates to choose from."
+  },
+  "scheduleRecommit": "Update schedule",
+  "@scheduleRecommit": {
+    "description": "Primary action that re-materializes an existing calendar after a change."
+  },
+  "scheduleRest": "Rest",
+  "@scheduleRest": {
+    "description": "Day assignment: no training."
+  },
+  "scheduleRestCount": "{count, plural, =0{No rest} =1{1 rest day} other{{count} rest days}}",
+  "@scheduleRestCount": {
+    "description": "How many rest days the current week pattern contains.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scheduleSection": "Schedule",
+  "@scheduleSection": {
+    "description": "Section heading above the week strip in the program editor."
+  },
+  "scheduleUnchanged": "Calendar already matches the plan.",
+  "@scheduleUnchanged": {
+    "description": "Confirmation when a re-commit found nothing to change."
+  },
+  "scheduleUnsaved": "Not committed yet",
+  "@scheduleUnsaved": {
+    "description": "Badge shown when the week strip has been edited but not yet applied to the calendar."
+  },
+  "scheduleWeekStripHint": "Tap a day to say what happens on it.",
+  "@scheduleWeekStripHint": {
+    "description": "One-line instruction under the week strip."
+  },
+  "sessionAddBlock": "Add block",
+  "@sessionAddBlock": {
+    "description": "Action that appends a block to a session."
+  },
+  "sessionAllAsPlanned": "All as planned",
+  "@sessionAllAsPlanned": {
+    "description": "One-tap action that logs every remaining set of an exercise at its target values."
+  },
+  "sessionBlocksSection": "Blocks",
+  "@sessionBlocksSection": {
+    "description": "Section heading above the block list."
+  },
+  "sessionCodeHint": "A",
+  "@sessionCodeHint": {
+    "description": "Placeholder in the session code field."
+  },
+  "sessionCodeLabel": "Code",
+  "@sessionCodeLabel": {
+    "description": "Short letter identifying the day, e.g. A."
+  },
+  "sessionCreateTitle": "New day",
+  "@sessionCreateTitle": {
+    "description": "Title of the create-session sheet."
+  },
+  "sessionDeleteBody": "Its blocks and exercises go with it.",
+  "@sessionDeleteBody": {
+    "description": "Confirmation dialog body."
+  },
+  "sessionDeleteTitle": "Delete this day?",
+  "@sessionDeleteTitle": {
+    "description": "Confirmation dialog title."
+  },
+  "sessionDiscard": "Discard session",
+  "@sessionDiscard": {
+    "description": "Menu action that abandons a session started by mistake."
+  },
+  "sessionDiscardBody": "Everything logged in it is removed and the day goes back to upcoming.",
+  "@sessionDiscardBody": {
+    "description": "Confirmation dialog body."
+  },
+  "sessionDiscardTitle": "Discard this session?",
+  "@sessionDiscardTitle": {
+    "description": "Confirmation dialog title."
+  },
+  "sessionEditTitle": "Edit day",
+  "@sessionEditTitle": {
+    "description": "Title of the edit-session sheet."
+  },
+  "sessionFinish": "Finish",
+  "@sessionFinish": {
+    "description": "Action that ends the session and opens the finalize sheet."
+  },
+  "sessionNoBlocksBody": "A block groups exercises — warm-up, main work, conditioning.",
+  "@sessionNoBlocksBody": {
+    "description": "Empty state body explaining what a block is for."
+  },
+  "sessionNoBlocksTitle": "No blocks yet",
+  "@sessionNoBlocksTitle": {
+    "description": "Empty state title in the session editor."
+  },
+  "sessionNoPrevious": "No history yet",
+  "@sessionNoPrevious": {
+    "description": "Shown in place of the previous-set line the first time an exercise is done."
+  },
+  "sessionPreviousSet": "Prev {weight} kg × {reps}",
+  "@sessionPreviousSet": {
+    "description": "Last session's performance, shown above the set chips.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "25"
+      },
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionRestOf": "{seconds}s",
+  "@sessionRestOf": {
+    "description": "Prescribed rest, shown on the exercise header.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionSetChip": "Set {index}",
+  "@sessionSetChip": {
+    "description": "Accessibility label for an unlogged set chip.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionSetCount": "{count, plural, =0{No sets} =1{1 set} other{{count} sets}}",
+  "@sessionSetCount": {
+    "description": "Total prescribed sets in a session, shown on its row.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionSetProgress": "{done}/{total}",
+  "@sessionSetProgress": {
+    "description": "Completion pill on a collapsed exercise, e.g. 3/4.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionTitleHint": "Push + Core",
+  "@sessionTitleHint": {
+    "description": "Placeholder in the session title field."
+  },
+  "sessionTitleLabel": "Title",
+  "@sessionTitleLabel": {
+    "description": "Descriptive name for the day, e.g. Push + Core."
+  },
+  "sessionWeekdayLabel": "Weekday",
+  "@sessionWeekdayLabel": {
+    "description": "Which day of the week this session is pinned to."
+  },
+  "sessionWeekdayUnset": "Any day",
+  "@sessionWeekdayUnset": {
+    "description": "Weekday option meaning the session is not pinned to a particular day."
+  },
+  "setClear": "Clear set",
+  "@setClear": {
+    "description": "Removes a logged set, returning the chip to empty."
+  },
+  "setEditTitle": "Set {index}",
+  "@setEditTitle": {
+    "description": "Title of the sheet that edits one set.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "setRepsLabel": "Reps",
+  "@setRepsLabel": {
+    "description": "Stepper label for repetitions performed."
+  },
+  "setRpeLabel": "RPE",
+  "@setRpeLabel": {
+    "description": "Label for the rate-of-perceived-exertion dots, a 5-10 scale."
+  },
+  "setRpeNone": "Not rated",
+  "@setRpeNone": {
+    "description": "Shown when no RPE has been picked for a set."
+  },
+  "setSideBoth": "Both",
+  "@setSideBoth": {
+    "description": "Side option: the set was worked on both sides."
+  },
+  "setSideLabel": "Side",
+  "@setSideLabel": {
+    "description": "Which side a unilateral set was worked."
+  },
+  "setSideLeft": "Left",
+  "@setSideLeft": {
+    "description": "Side option: left side only."
+  },
+  "setSideRight": "Right",
+  "@setSideRight": {
+    "description": "Side option: right side only."
+  },
+  "setWeightLabel": "Weight",
+  "@setWeightLabel": {
+    "description": "Stepper label for the load lifted, in kilograms."
+  },
+  "setWeightValue": "{value} kg",
+  "@setWeightValue": {
+    "description": "A load with its unit.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "62.5"
+      }
+    }
+  },
+  "skipEquipment": "Equipment",
+  "@skipEquipment": {
+    "description": "Skip reason: the rack or machine was unavailable."
+  },
+  "skipFeltOff": "Felt off",
+  "@skipFeltOff": {
+    "description": "Skip reason: not feeling up to it."
+  },
+  "skipOther": "Other",
+  "@skipOther": {
+    "description": "Skip reason: anything else."
+  },
+  "skipPain": "Pain",
+  "@skipPain": {
+    "description": "Skip reason: something hurt."
+  },
+  "skipTime": "Time",
+  "@skipTime": {
+    "description": "Skip reason: ran out of time."
+  },
+  "skipTitle": "Why skipped?",
+  "@skipTitle": {
+    "description": "Title of the sheet that captures a skip reason. Reason capture is what makes Insights honest."
+  },
+  "slotDeleteBody": "It leaves this block. The exercise stays in your catalog.",
+  "@slotDeleteBody": {
+    "description": "Confirmation dialog body."
+  },
+  "slotDeleteTitle": "Remove this exercise?",
+  "@slotDeleteTitle": {
+    "description": "Confirmation dialog title. 'Remove' rather than 'delete' — it leaves the plan, not the catalog."
+  },
+  "slotEditTitle": "Edit exercise",
+  "@slotEditTitle": {
+    "description": "Title of the exercise-slot editor sheet."
+  },
+  "slotPerSideBadge": "per side",
+  "@slotPerSideBadge": {
+    "description": "Badge on an exercise row for unilateral work."
+  },
+  "slotPerSideDescription": "Reps count per side, so the set is worked twice.",
+  "@slotPerSideDescription": {
+    "description": "Explains what the per-side switch changes."
+  },
+  "slotPerSideLabel": "Per side",
+  "@slotPerSideLabel": {
+    "description": "Switch label — reps are counted per side rather than in total."
+  },
+  "slotProgressionLabel": "Progression",
+  "@slotProgressionLabel": {
+    "description": "Label for the progression-rule selector."
+  },
+  "slotRepRange": "{min}–{max}",
+  "@slotRepRange": {
+    "description": "A rep range, e.g. 8–12. En dash.",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "slotRepsLabel": "Reps",
+  "@slotRepsLabel": {
+    "description": "Stepper label for prescribed reps."
+  },
+  "slotRepsRangeLabel": "Rep range",
+  "@slotRepsRangeLabel": {
+    "description": "Label for the two-ended rep target."
+  },
+  "slotRestLabel": "Rest",
+  "@slotRestLabel": {
+    "description": "Stepper label for rest between sets."
+  },
+  "slotRestSeconds": "{seconds}s rest",
+  "@slotRestSeconds": {
+    "description": "Rest interval on an exercise row.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "slotSetsByReps": "{sets} × {reps}",
+  "@slotSetsByReps": {
+    "description": "Compact prescription on an exercise row, e.g. 4 × 8.",
+    "placeholders": {
+      "sets": {
+        "type": "int"
+      },
+      "reps": {
+        "type": "String",
+        "example": "8–12"
+      }
+    }
+  },
+  "slotSetsLabel": "Sets",
+  "@slotSetsLabel": {
+    "description": "Stepper label for prescribed sets."
+  },
+  "slotSetsOnly": "{count, plural, =1{1 set} other{{count} sets}}",
+  "@slotSetsOnly": {
+    "description": "Prescription on an exercise row when no rep target is set.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stateAuthBody": "Your device session needs refreshing. Everything you've logged is safe on this phone.",
+  "@stateAuthBody": {
+    "description": "Body shown when the anonymous session could not be refreshed. Reassures the user that local data is intact, because sign-in is never required to keep logging."
+  },
+  "stateEmptyTitle": "Nothing here yet",
+  "@stateEmptyTitle": {
+    "description": "Default title for an empty list, used when a screen does not supply its own."
+  },
+  "stateErrorBody": "That didn't load. Try again — nothing was lost.",
+  "@stateErrorBody": {
+    "description": "Body of a generic failure state."
+  },
+  "stateErrorTitle": "Something went wrong",
+  "@stateErrorTitle": {
+    "description": "Title of a generic failure state."
+  },
+  "stateOfflineBody": "Groove works offline, so keep training. This part needs a connection.",
+  "@stateOfflineBody": {
+    "description": "Body shown when a load failed for lack of a network connection."
+  },
+  "stateOfflineTitle": "You're offline",
+  "@stateOfflineTitle": {
+    "description": "Title shown when a load failed because the device has no connection."
+  },
+  "stateParseBody": "That plan couldn't be read. You can fix it by hand before importing.",
+  "@stateParseBody": {
+    "description": "Body shown when a training plan could not be parsed into a program."
+  },
+  "stateStorageBody": "Groove couldn't reach its local database. Restarting the app usually clears it.",
+  "@stateStorageBody": {
+    "description": "Body shown when the on-device database read or write failed. The serious error class, since the device is the source of truth."
+  },
+  "summaryAdherence": "{value} of plan",
+  "@summaryAdherence": {
+    "description": "Share of the prescribed sets that were completed.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "87%"
+      }
+    }
+  },
+  "summaryDone": "Done",
+  "@summaryDone": {
+    "description": "Dismisses the session summary."
+  },
+  "summaryDuration": "{minutes} min",
+  "@summaryDuration": {
+    "description": "How long the session took.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "summarySets": "{count, plural, =1{1 set} other{{count} sets}}",
+  "@summarySets": {
+    "description": "Completed sets in the summary.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "summarySkipped": "{count, plural, =1{1 skipped} other{{count} skipped}}",
+  "@summarySkipped": {
+    "description": "Skipped sets in the summary.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "summaryTitle": "Session logged",
+  "@summaryTitle": {
+    "description": "Heading of the post-session summary."
+  },
+  "summaryTonnage": "{value} kg",
+  "@summaryTonnage": {
+    "description": "Total weight moved in the session.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "4,250"
+      }
+    }
+  },
+  "todayBlockCount": "{count, plural, =1{1 block} other{{count} blocks}}",
+  "@todayBlockCount": {
+    "description": "How many blocks today's session holds.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "todayCricketBody": "Match or practice. Gym work waits.",
+  "@todayCricketBody": {
+    "description": "Body of the cricket-day card."
+  },
+  "todayCricketTitle": "Cricket day",
+  "@todayCricketTitle": {
+    "description": "Title of the Today card on a cricket day."
+  },
+  "todayEstimatedMinutes": "{count} min",
+  "@todayEstimatedMinutes": {
+    "description": "Estimated session length on the Today card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "todayInProgress": "In progress",
+  "@todayInProgress": {
+    "description": "Badge on the Today card while a session is running."
+  },
+  "todayLastSession": "Last session",
+  "@todayLastSession": {
+    "description": "Heading above the previous-session recap."
+  },
+  "todayLastSessionNone": "No sessions logged yet.",
+  "@todayLastSessionNone": {
+    "description": "Shown in place of the recap before anything has been logged."
+  },
+  "todayNoProgramBody": "Build a program on the Plan tab, then commit its schedule.",
+  "@todayNoProgramBody": {
+    "description": "Explains how to get a session onto Today."
+  },
+  "todayNoProgramTitle": "No active program",
+  "@todayNoProgramTitle": {
+    "description": "Today card when no program has been made active."
+  },
+  "todayNoScheduleBody": "Commit the schedule on the Plan tab to fill in your calendar.",
+  "@todayNoScheduleBody": {
+    "description": "Explains why today is empty."
+  },
+  "todayNoScheduleTitle": "Nothing scheduled today",
+  "@todayNoScheduleTitle": {
+    "description": "Today card when a program is active but this date has no row."
+  },
+  "todayPlaceholderBody": "Once a program is set up, today's session — blocks, sets and rest timers — lands right here.",
+  "@todayPlaceholderBody": {
+    "description": "Body copy on the Today tab before the session screens exist."
+  },
+  "todayPlaceholderTitle": "Your session lands here",
+  "@todayPlaceholderTitle": {
+    "description": "Title of the Today tab placeholder state."
+  },
+  "todayRestDayBody": "Nothing scheduled. Eat, sleep, come back tomorrow.",
+  "@todayRestDayBody": {
+    "description": "Body of the rest-day card. Deliberately calm rather than nagging."
+  },
+  "todayRestDayTitle": "Rest day",
+  "@todayRestDayTitle": {
+    "description": "Title of the Today card when nothing is scheduled for training."
+  },
+  "todayResumeSession": "Resume session",
+  "@todayResumeSession": {
+    "description": "Primary action when a session is already in progress."
+  },
+  "todayStartSession": "Start session",
+  "@todayStartSession": {
+    "description": "Primary action that begins logging today's workout."
+  },
+  "todayTitle": "Today",
+  "@todayTitle": {
+    "description": "Screen title for the Today tab."
+  },
+  "todayWeekLabel": "This week",
+  "@todayWeekLabel": {
+    "description": "Heading above the seven-day strip on Today."
+  }
+}

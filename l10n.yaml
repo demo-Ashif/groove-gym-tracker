@@ -1,0 +1,11 @@
+# ARB -> Dart localization config (ADR §12.1).
+#
+# `synthetic-package` is not listed: the flag is deprecated in Flutter 3.41 and
+# cannot be enabled, so setting `output-dir` is now the whole story. Generated
+# sources land in the package itself and are gitignored.
+arb-dir: lib/l10n/arb
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: L10n
+output-dir: lib/l10n/generated
+nullable-getter: false

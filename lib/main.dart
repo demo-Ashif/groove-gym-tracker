@@ -1,20 +1,12 @@
-import 'package:flutter/material.dart';
+// Default entrypoint for local development — the dev flavor.
+//
+// Run another flavor with its own entrypoint so the Dart-side environment and
+// the native application ID always agree:
+//   fvm flutter run -t lib/main_dev.dart  --flavor dev
+//   fvm flutter run -t lib/main_stg.dart  --flavor stg
+//   fvm flutter run -t lib/main_prod.dart --flavor prod
 
-void main() {
-  runApp(const MainApp());
-}
+import 'bootstrap.dart';
+import 'core/config/app_env.dart';
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
-    );
-  }
-}
+Future<void> main() => bootstrap(AppEnvironment.dev);
