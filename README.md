@@ -10,20 +10,24 @@ Design and architecture: [`docs/groove_adr.md`](docs/groove_adr.md).
 
 ## Running
 
-Three flavors install side by side (ADR §16). Each has its own entrypoint, so
-the Dart-side environment and the native application ID always agree.
+No build flavors: one native build variant, one application ID
+(`lab.aether.groove`), one home-screen app. `dev` and `prod` are Dart-side
+config only — the entrypoint picks the environment, `--dart-define-from-file`
+supplies its Supabase URL and anon key.
 
 ```bash
-flutter run -t lib/main_dev.dart  --flavor dev  --dart-define-from-file=env/dev.json
-flutter run -t lib/main_stg.dart  --flavor stg  --dart-define-from-file=env/stg.json
-flutter run -t lib/main_prod.dart --flavor prod --dart-define-from-file=env/prod.json
+flutter run -t lib/main_dev.dart  --dart-define-from-file=env/dev.json
+flutter run -t lib/main_prod.dart --dart-define-from-file=env/prod.json
 ```
 
-| Flavor | Application ID | Home-screen name |
-|---|---|---|
-| dev | `lab.aether.groove.dev` | Groove Dev |
-| stg | `lab.aether.groove.stg` | Groove Stg |
-| prod | `lab.aether.groove` | Groove |
+| Environment | Entrypoint | Config | Crash reporting |
+|---|---|---|---|
+| dev | `lib/main_dev.dart` | `env/dev.json` | off |
+| prod | `lib/main_prod.dart` | `env/prod.json` | on |
+
+Because there is one application ID, dev and prod overwrite each other on a
+device — they do not install side by side. Add flavors back if that becomes
+necessary.
 
 ## Code generation
 

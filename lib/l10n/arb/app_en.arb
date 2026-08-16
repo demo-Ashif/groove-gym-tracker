@@ -160,15 +160,11 @@
   },
   "envDev": "Development",
   "@envDev": {
-    "description": "Name of the dev build flavor, shown in the Profile > About row."
+    "description": "Name of the dev build environment, shown in the Profile > About row."
   },
   "envProd": "Production",
   "@envProd": {
-    "description": "Name of the production build flavor, shown in the Profile > About row."
-  },
-  "envStg": "Staging",
-  "@envStg": {
-    "description": "Name of the staging build flavor, shown in the Profile > About row."
+    "description": "Name of the production build environment, shown in the Profile > About row."
   },
   "exAbWheelRollout": "Ab wheel rollout",
   "@exAbWheelRollout": {

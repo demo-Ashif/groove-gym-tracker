@@ -6,8 +6,6 @@ import 'app_env.dart';
 class AppConfig {
   const AppConfig({
     required this.env,
-    required this.applicationId,
-    required this.displayName,
     required this.supabaseUrl,
     required this.supabaseAnonKey,
     required this.enableCrashReporting,
@@ -15,8 +13,6 @@ class AppConfig {
 
   factory AppConfig.fromEnv(AppEnvironment env) => AppConfig(
     env: env,
-    applicationId: env.applicationId,
-    displayName: env.displayName,
     supabaseUrl: env.supabaseUrl,
     supabaseAnonKey: env.supabaseAnonKey,
     enableCrashReporting: env.enableCrashReporting,
@@ -29,8 +25,6 @@ class AppConfig {
   static const version = '0.1.0';
 
   final AppEnvironment env;
-  final String applicationId;
-  final String displayName;
 
   /// Empty until the Supabase project exists (ADR roadmap Phase 2). The sync
   /// layer must treat empty as "remote disabled" and keep working — the

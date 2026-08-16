@@ -32,26 +32,10 @@ android {
         versionName = flutter.versionName
     }
 
-    // Three flavors installable side by side (ADR §16), so a real logging
-    // history can live on prod while dev is being broken.
-    flavorDimensions += "env"
-
-    productFlavors {
-        create("dev") {
-            dimension = "env"
-            applicationIdSuffix = ".dev"
-            resValue("string", "app_name", "Groove Dev")
-        }
-        create("stg") {
-            dimension = "env"
-            applicationIdSuffix = ".stg"
-            resValue("string", "app_name", "Groove Stg")
-        }
-        create("prod") {
-            dimension = "env"
-            resValue("string", "app_name", "Groove")
-        }
-    }
+    // No product flavors. dev/prod differ only in Dart-side config, passed at
+    // build time with --dart-define-from-file=env/<env>.json and selected by
+    // entrypoint (lib/main_dev.dart | lib/main_prod.dart). One application ID,
+    // one installable app. Revisit if side-by-side installs are ever needed.
 
     buildTypes {
         release {

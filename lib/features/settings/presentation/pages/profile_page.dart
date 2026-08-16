@@ -219,7 +219,6 @@ class _AboutCard extends StatelessWidget {
             label: l10n.profileAboutEnvironment,
             value: switch (config.env) {
               AppEnvironment.dev => l10n.envDev,
-              AppEnvironment.stg => l10n.envStg,
               AppEnvironment.prod => l10n.envProd,
             },
           ),
