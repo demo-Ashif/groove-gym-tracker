@@ -23,13 +23,32 @@ abstract interface class ExerciseRepository {
   /// and only the presentation layer can resolve them for the active locale.
   Future<Result<List<Exercise>>> findByText(String query);
 
+  /// Creates a user-defined exercise.
+  ///
+  /// Fails with a [ParseFailure] when [name] is blank or already belongs to
+  /// another user-created exercise, compared case- and whitespace-insensitively
+  /// — a catalog with two "Incline Press" rows splits one lift's history into
+  /// two charts that each look like a plateau.
   Future<Result<Exercise>> createCustom({
     required String name,
     required MovementPattern pattern,
+    required BodySection bodySection,
     required LoadType loadType,
     bool isUnilateral,
     List<String> primaryMuscles,
     List<String> aliases,
+  });
+
+  /// Renames a user-created exercise, and optionally re-files it under another
+  /// body section.
+  ///
+  /// Rejects system exercises and duplicate names on the same terms as
+  /// [createCustom]. Renaming is safe for history: every set log points at the
+  /// id, never at the text.
+  Future<Result<void>> renameCustom({
+    required String id,
+    required String name,
+    BodySection? bodySection,
   });
 
   /// Teaches the catalog a spelling the parser should recognise next time.

@@ -773,6 +773,13 @@ const exerciseCatalogSeed = <SeedExercise>[
     aliases: ['spin bike', 'cycling'],
   ),
   SeedExercise(
+    nameKey: 'exCrossTrainer',
+    pattern: MovementPattern.conditioning,
+    loadType: LoadType.time,
+    primaryMuscles: ['legs', 'glutes'],
+    aliases: ['elliptical', 'x-trainer'],
+  ),
+  SeedExercise(
     nameKey: 'exSwimming',
     pattern: MovementPattern.conditioning,
     loadType: LoadType.distance,

@@ -12,6 +12,7 @@ import '../../../../domain/repositories/log_repository.dart';
 import '../../../../domain/repositories/plan_repository.dart';
 import '../../../../domain/repositories/schedule_repository.dart';
 import '../../../../domain/services/progression_service.dart';
+import '../../../../domain/values/calendar_date.dart';
 import 'active_session_state.dart';
 
 /// The logging loop (ADR §9.2).
@@ -50,9 +51,6 @@ class ActiveSessionCubit extends Cubit<ActiveSessionState> {
   final Map<String, SetLog> _previousSets = {};
   SessionLog? _log0;
 
-  DateTime? _restStartedAt;
-  int _restSeconds = 0;
-
   bool _templateLoaded = false;
   bool _catalogLoaded = false;
 
@@ -70,8 +68,13 @@ class ActiveSessionCubit extends Cubit<ActiveSessionState> {
       return;
     }
 
+    // Both are needed: a backfilled day has neither a program nor a template,
+    // and logs freeform against the catalog instead.
     if (scheduled.sessionTemplateId case final templateId?) {
-      final program = (await _plan.loadProgram(scheduled.programId)).dataOrNull;
+      final programId = scheduled.programId;
+      final program = programId == null
+          ? null
+          : (await _plan.loadProgram(programId)).dataOrNull;
       _template = program?.phases
           .expand((phase) => phase.sessions)
           .where((session) => session.id == templateId)
@@ -92,6 +95,10 @@ class ActiveSessionCubit extends Cubit<ActiveSessionState> {
         existing.scheduledSessionId != _scheduledSessionId) {
       final started = await _log.startSession(
         scheduledSessionId: _scheduledSessionId,
+        // A day in the past is a backfill: the session is stamped with the
+        // date it happened, not the moment it was typed in, or history sorts
+        // by data entry and every chart reads wrong.
+        startedAt: _startedAtFor(scheduled.date),
       );
       if (started.failureOrNull case final failure?) {
         emit(ActiveSessionState.failure(failure));
@@ -113,6 +120,16 @@ class ActiveSessionCubit extends Cubit<ActiveSessionState> {
 
   void _onError(Object error) =>
       emit(ActiveSessionState.failure(Failure.fromException(error)));
+
+  /// When to stamp a session that is being started for [date].
+  ///
+  /// Today keeps the real clock, so duration is measured properly. A past day
+  /// gets midday on that date — a defensible "sometime that day" that is well
+  /// clear of both midnight boundaries in any timezone.
+  DateTime? _startedAtFor(CalendarDate date) {
+    if (date == CalendarDate.today()) return null;
+    return DateTime(date.year, date.month, date.day, 12);
+  }
 
   /// Fetches last week's numbers for each exercise in the session, once each.
   Future<void> _loadPreviousSets(SessionLog log) async {
@@ -150,8 +167,6 @@ class ActiveSessionCubit extends Cubit<ActiveSessionState> {
         template: _template,
         exercisesById: _catalog,
         previousSets: Map.unmodifiable(_previousSets),
-        restStartedAt: _restStartedAt,
-        restSeconds: _restSeconds,
       ),
     );
   }
@@ -166,11 +181,16 @@ class ActiveSessionCubit extends Cubit<ActiveSessionState> {
       );
 
   /// One tap, one set. The 90% path.
+  ///
+  /// A time-based slot writes only a duration. Its prescription has no load
+  /// and no reps, so pre-filling either would invent numbers that go straight
+  /// into tonnage and e1RM charts as fact.
   Future<Failure?> logSet({
     required ExerciseTemplate slot,
     required int setIndex,
     double? weightKg,
     int? reps,
+    int? durationSec,
     double? rpe,
     SetSide side = SetSide.both,
   }) async {
@@ -178,50 +198,21 @@ class ActiveSessionCubit extends Cubit<ActiveSessionState> {
     if (log == null) return null;
 
     final prefill = prefillFor(slot, setIndex);
+    final isTimeBased = slot.isTimeBased;
 
     final result = await _log.logSet(
       sessionLogId: log.id,
       exerciseId: slot.exerciseId,
       setIndex: setIndex,
       exerciseTemplateId: slot.id,
-      weightKg: weightKg ?? prefill.weightKg,
-      reps: reps ?? prefill.reps,
+      weightKg: isTimeBased ? null : (weightKg ?? prefill.weightKg),
+      reps: isTimeBased ? null : (reps ?? prefill.reps),
+      durationSec: isTimeBased ? (durationSec ?? slot.targetDurationSec) : null,
       rpe: rpe,
       side: side,
     );
 
-    if (result.isSuccess) _startRest(slot.restSeconds);
     return result.failureOrNull;
-  }
-
-  /// Completes every remaining set of an exercise at its target values. This
-  /// is why a good session can be about ten taps (ADR §9.2).
-  Future<Failure?> logAllAsPlanned(ExerciseTemplate slot) async {
-    final log = _log0;
-    if (log == null) return null;
-
-    final logged = {
-      for (final set in log.sets)
-        if (set.exerciseId == slot.exerciseId) set.setIndex,
-    };
-
-    for (var index = 0; index < slot.targetSets; index++) {
-      if (logged.contains(index)) continue;
-
-      final prefill = prefillFor(slot, index);
-      final result = await _log.logSet(
-        sessionLogId: log.id,
-        exerciseId: slot.exerciseId,
-        setIndex: index,
-        exerciseTemplateId: slot.id,
-        weightKg: prefill.weightKg,
-        reps: prefill.reps,
-      );
-      if (result.failureOrNull case final failure?) return failure;
-    }
-
-    _startRest(slot.restSeconds);
-    return null;
   }
 
   Future<Failure?> skipSet({
@@ -245,23 +236,6 @@ class ActiveSessionCubit extends Cubit<ActiveSessionState> {
 
   Future<Failure?> clearSet(String setId) async =>
       (await _log.deleteSet(setId)).failureOrNull;
-
-  // --- rest timer ----------------------------------------------------------
-
-  /// Starts the rest interval. Stored as the moment it began, so a suspended
-  /// app resumes at the right point rather than where it was paused.
-  void _startRest(int seconds) {
-    if (seconds <= 0) return;
-    _restStartedAt = DateTime.now();
-    _restSeconds = seconds;
-    _emit();
-  }
-
-  void dismissRest() {
-    _restStartedAt = null;
-    _restSeconds = 0;
-    _emit();
-  }
 
   // --- ending --------------------------------------------------------------
 

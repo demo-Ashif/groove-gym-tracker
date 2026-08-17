@@ -35,7 +35,7 @@ abstract final class ProgressionService {
     int weeksElapsed = 1,
   }) {
     final baseWeight = lastSet?.weightKg ?? template.targetLoadKg;
-    final targetReps = template.targetRepsMin ?? template.targetRepsMax;
+    final targetReps = template.targetReps;
 
     return switch (template.progression) {
       FixedProgression() => SetPrefill(
@@ -78,6 +78,11 @@ abstract final class ProgressionService {
 
   /// Add reps until the top of the range, then add load and drop back to the
   /// bottom. The standard hypertrophy scheme.
+  ///
+  /// The range here belongs to the **rule**, not to the prescription: a slot
+  /// prescribes one rep number, and choosing double progression is what
+  /// introduces a range to climb. That keeps the plan editor to a single reps
+  /// stepper without losing the scheme.
   static SetPrefill _doubleProgression({
     required double? baseWeight,
     required int? lastReps,

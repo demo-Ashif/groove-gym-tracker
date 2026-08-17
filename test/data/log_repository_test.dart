@@ -61,8 +61,7 @@ void main() {
       blockTemplateId: block.id,
       exerciseId: squat,
       targetSets: 4,
-      targetRepsMin: 8,
-      targetRepsMax: 8,
+      targetReps: 8,
     );
 
     await schedule.commitSchedule(
@@ -71,6 +70,9 @@ void main() {
         DateTime.sunday: const DayAssignment.gym('A'),
       }),
     );
+
+    // Active, so the day is visible to the range query Today reads through.
+    await plan.setActiveProgram(program.id);
 
     final days = await schedule.watchProgramSchedule(program.id).first;
     return days.firstWhere((d) => d.kind == ScheduledSessionKind.gym).id;
@@ -87,8 +89,9 @@ void main() {
       expect(session.isActive, isTrue);
       expect(session.sets, isEmpty);
 
-      final day = (await schedule.watchRange(from: start, to: start).first)
-          .firstWhere((d) => d.id == scheduledId);
+      final day =
+          (await schedule.watchActiveRange(from: start, to: start).first)
+              .firstWhere((d) => d.id == scheduledId);
       expect(day.status, ScheduledSessionStatus.inProgress);
     });
 
@@ -156,8 +159,9 @@ void main() {
       );
 
       expect(await log.watchActiveSession().first, isNull);
-      final day = (await schedule.watchRange(from: start, to: start).first)
-          .firstWhere((d) => d.id == scheduledId);
+      final day =
+          (await schedule.watchActiveRange(from: start, to: start).first)
+              .firstWhere((d) => d.id == scheduledId);
       // A phantom in-progress workout would block Today forever.
       expect(day.status, ScheduledSessionStatus.upcoming);
     });
@@ -325,8 +329,9 @@ void main() {
         energy: 4,
       );
 
-      final day = (await schedule.watchRange(from: start, to: start).first)
-          .firstWhere((d) => d.id == scheduledId);
+      final day =
+          (await schedule.watchActiveRange(from: start, to: start).first)
+              .firstWhere((d) => d.id == scheduledId);
       expect(day.status, ScheduledSessionStatus.completed);
 
       final finished = (await log.watchSession(session.id).first)!;
@@ -355,8 +360,9 @@ void main() {
         plannedSets: 4,
       );
 
-      final day = (await schedule.watchRange(from: start, to: start).first)
-          .firstWhere((d) => d.id == scheduledId);
+      final day =
+          (await schedule.watchActiveRange(from: start, to: start).first)
+              .firstWhere((d) => d.id == scheduledId);
       // One set of four is not a workout you did.
       expect(day.status, ScheduledSessionStatus.partial);
     });
@@ -373,10 +379,89 @@ void main() {
         plannedSets: 4,
       );
 
-      final day = (await schedule.watchRange(from: start, to: start).first)
-          .firstWhere((d) => d.id == scheduledId);
+      final day =
+          (await schedule.watchActiveRange(from: start, to: start).first)
+              .firstWhere((d) => d.id == scheduledId);
       // Starting a session and walking out is not a partial workout.
       expect(day.status, ScheduledSessionStatus.skipped);
+    });
+  });
+
+  group('history', () {
+    /// Starts, logs one set, and finalizes — a session that happened.
+    Future<String> finishSession(String scheduledId) async {
+      final session = (await log.startSession(
+        scheduledSessionId: scheduledId,
+      )).dataOrNull!;
+      await log.logSet(
+        sessionLogId: session.id,
+        exerciseId: squat,
+        setIndex: 0,
+        reps: 8,
+        weightKg: 100,
+      );
+      await log.finalizeSession(
+        sessionLogId: session.id,
+        scheduledSessionId: scheduledId,
+        plannedSets: 4,
+      );
+      return session.id;
+    }
+
+    test(
+      'lists finished sessions with the day they were logged against',
+      () async {
+        final scheduledId = await seedScheduledDay();
+        final sessionId = await finishSession(scheduledId);
+
+        final history = await log.watchFinishedSessions().first;
+
+        expect(history, hasLength(1));
+        expect(history.single.log.id, sessionId);
+        expect(history.single.log.sets, hasLength(1));
+        // Joined through the scheduled day to its template, so a row reads
+        // "Push" rather than a bare date.
+        expect(history.single.title, 'Push');
+      },
+    );
+
+    test('a session still in progress is not history yet', () async {
+      final scheduledId = await seedScheduledDay();
+      await log.startSession(scheduledSessionId: scheduledId);
+
+      // It is offered as something to resume; history is what happened.
+      expect(await log.watchFinishedSessions().first, isEmpty);
+    });
+
+    test('a discarded session leaves no trace in history', () async {
+      final scheduledId = await seedScheduledDay();
+      final session = (await log.startSession(
+        scheduledSessionId: scheduledId,
+      )).dataOrNull!;
+
+      await log.discardSession(
+        sessionLogId: session.id,
+        scheduledSessionId: scheduledId,
+      );
+
+      expect(await log.watchFinishedSessions().first, isEmpty);
+    });
+
+    test('the list re-emits when a session is finished', () async {
+      final scheduledId = await seedScheduledDay();
+
+      final counts = <int>[];
+      final subscription = log.watchFinishedSessions().listen(
+        (sessions) => counts.add(sessions.length),
+      );
+      addTearDown(subscription.cancel);
+      await pumpEventQueue();
+
+      await finishSession(scheduledId);
+      await pumpEventQueue();
+
+      expect(counts.first, 0);
+      expect(counts.last, 1, reason: 'the live query picked up the finalize');
     });
   });
 

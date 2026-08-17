@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/logging/app_logger.dart';
 import '../../domain/enums/training_enums.dart';
+import 'daos/check_in_dao.dart';
 import 'daos/exercise_dao.dart';
 import 'daos/log_dao.dart';
 import 'daos/plan_dao.dart';
@@ -58,7 +59,7 @@ String systemExerciseId(String nameKey) =>
     MetricDefinitions,
     SyncOutbox,
   ],
-  daos: [ExerciseDao, LogDao, PlanDao, ScheduleDao],
+  daos: [CheckInDao, ExerciseDao, LogDao, PlanDao, ScheduleDao],
 )
 class AppDatabase extends _$AppDatabase {
   /// Production: opens `groove.sqlite` in the app's documents directory, on a
@@ -72,8 +73,13 @@ class AppDatabase extends _$AppDatabase {
   /// Bump only alongside a `MigrationStrategy` step **and** a test that walks
   /// data from the previous version through it. A bad migration is the one bug
   /// that destroys history (ADR §17.2).
+  ///
+  /// **v2 is pre-release and destructive.** Nothing has shipped, so the
+  /// prescription model changed shape (single rep target, time targets) without
+  /// a data-preserving step. The rule above applies from the first release
+  /// build onward, not to this one.
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -82,9 +88,23 @@ class AppDatabase extends _$AppDatabase {
       await _seedCatalog();
     },
     onUpgrade: (m, from, to) async {
-      // No steps yet — v1 is the first shipped schema. Each future step gets
-      // its own `if (from < n)` block and its own test.
       AppLogger.i('Schema upgrade $from -> $to', tag: 'DB');
+
+      // Pre-release reset: drop everything and rebuild. Deliberate, and only
+      // defensible because no build has shipped. Every future step is an
+      // `if (from < n)` block that preserves data, with a test that walks
+      // rows through it.
+      if (from < 2) {
+        for (final entity in allSchemaEntities.reversed) {
+          await m.drop(entity);
+        }
+        await m.createAll();
+        await _seedCatalog();
+        AppLogger.w(
+          'Pre-release schema reset: local data was discarded',
+          tag: 'DB',
+        );
+      }
     },
     beforeOpen: (details) async {
       // Off by default in SQLite, and everything in this schema leans on it:
@@ -119,6 +139,13 @@ class AppDatabase extends _$AppDatabase {
               nameKey: Value(exercise.nameKey),
               aliases: Value(jsonEncode(exercise.aliases)),
               pattern: exercise.pattern,
+              // Derived once, at seed time, from the pattern and muscles the
+              // seed already carries — rather than hand-tagging 123 rows and
+              // letting them drift out of step with their own muscle lists.
+              bodySection: BodySection.forExercise(
+                pattern: exercise.pattern,
+                primaryMuscles: exercise.primaryMuscles,
+              ),
               loadType: exercise.loadType,
               isUnilateral: Value(exercise.isUnilateral),
               primaryMuscles: Value(jsonEncode(exercise.primaryMuscles)),

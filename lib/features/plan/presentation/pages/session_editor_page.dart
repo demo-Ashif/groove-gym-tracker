@@ -252,7 +252,8 @@ class _BlockCard extends StatelessWidget {
 
     final prescription = await AppSheet.show<SlotFormResult>(
       context,
-      builder: (_) => SlotFormSheet(exerciseName: name),
+      builder: (_) =>
+          SlotFormSheet(exerciseName: name, loadType: exercise.loadType),
     );
     if (prescription == null || !context.mounted) return;
 
@@ -260,8 +261,9 @@ class _BlockCard extends StatelessWidget {
       blockTemplateId: block.id,
       exerciseId: exercise.id,
       targetSets: prescription.targetSets,
-      targetRepsMin: prescription.targetRepsMin,
-      targetRepsMax: prescription.targetRepsMax,
+      targetReps: prescription.targetReps,
+      targetDurationSec: prescription.targetDurationSec,
+      targetLoadKg: prescription.targetLoadKg,
       restSeconds: prescription.restSeconds,
       perSide: prescription.perSide,
       progression: prescription.progression,
@@ -436,6 +438,7 @@ class _SlotRow extends StatelessWidget {
       context,
       builder: (_) => SlotFormSheet(
         exerciseName: _name(context),
+        loadType: exercise?.loadType,
         slot: slot,
         onRequestDelete: () => _delete(context),
       ),
@@ -449,9 +452,9 @@ class _SlotRow extends StatelessWidget {
         exerciseId: slot.exerciseId,
         orderIndex: slot.orderIndex,
         targetSets: result.targetSets,
-        targetRepsMin: result.targetRepsMin,
-        targetRepsMax: result.targetRepsMax,
-        targetLoadKg: slot.targetLoadKg,
+        targetReps: result.targetReps,
+        targetDurationSec: result.targetDurationSec,
+        targetLoadKg: result.targetLoadKg,
         targetLoadText: slot.targetLoadText,
         targetRpe: slot.targetRpe,
         restSeconds: result.restSeconds,
@@ -489,16 +492,16 @@ class _SlotRow extends StatelessWidget {
     final l10n = context.l10n;
     final formatters = Formatters.of(context);
 
-    final reps = switch ((slot.targetRepsMin, slot.targetRepsMax)) {
-      (final min?, final max?) when min != max => l10n.slotRepRange(min, max),
-      (final min?, _) => '$min',
-      (_, final max?) => '$max',
-      _ => null,
+    // Reps and time are alternatives, so the row reads "4 × 8" or "1 × 10 min"
+    // and falls back to the set count when neither has been prescribed yet.
+    final prescription = switch ((slot.targetReps, slot.targetDurationSec)) {
+      (final reps?, _) => l10n.slotSetsByReps(slot.targetSets, '$reps'),
+      (_, final seconds?) => l10n.slotSetsByReps(
+        slot.targetSets,
+        l10n.slotDurationMinutes((seconds / 60).round()),
+      ),
+      _ => l10n.slotSetsOnly(slot.targetSets),
     };
-
-    final prescription = reps == null
-        ? l10n.slotSetsOnly(slot.targetSets)
-        : l10n.slotSetsByReps(slot.targetSets, reps);
 
     final progression = slot.progression.detail(
       l10n,

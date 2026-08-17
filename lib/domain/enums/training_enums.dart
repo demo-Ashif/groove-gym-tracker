@@ -33,6 +33,74 @@ enum MovementPattern {
   mobility,
 }
 
+/// The section of the body an exercise trains — how the catalog picker groups
+/// itself, and how a lifter actually thinks about their week ("chest day").
+///
+/// Deliberately *not* [MovementPattern]. A pattern is an analytical axis for
+/// balancing volume, which is why Insights groups by it; a section is how
+/// someone searching for "incline press" expects a list to be organised. Both
+/// are stored, because collapsing them would cost one of the two jobs.
+///
+/// Declaration order is display order in the picker.
+enum BodySection {
+  chest,
+  upperBack,
+  lowerBack,
+  shoulders,
+  arms,
+  core,
+  glutes,
+  legs,
+  fullBody,
+  cardio,
+  mobility;
+
+  /// Files an exercise from the data the catalog already carries.
+  ///
+  /// Conditioning and mobility answer to their pattern rather than to a
+  /// muscle: a treadmill's `legs` is true but filing it under Legs next to
+  /// squats is not what anyone is looking for.
+  ///
+  /// Everything else keys off the **first** primary muscle, which the seed
+  /// orders most-primary-first. Unknown or empty falls back to [fullBody]
+  /// rather than throwing — a catalog row from a newer version must not crash
+  /// an older picker.
+  static BodySection forExercise({
+    required MovementPattern pattern,
+    required List<String> primaryMuscles,
+  }) {
+    if (pattern == MovementPattern.conditioning) return BodySection.cardio;
+    if (pattern == MovementPattern.mobility) return BodySection.mobility;
+
+    return switch (primaryMuscles.firstOrNull) {
+      'chest' => BodySection.chest,
+      'lats' ||
+      'traps' ||
+      'rhomboids' ||
+      'upperBack' ||
+      'thoracicSpine' => BodySection.upperBack,
+      'lowerBack' || 'spine' => BodySection.lowerBack,
+      'frontDelts' ||
+      'sideDelts' ||
+      'rearDelts' ||
+      'shoulders' ||
+      'rotatorCuff' => BodySection.shoulders,
+      'biceps' || 'triceps' || 'brachialis' || 'grip' => BodySection.arms,
+      'core' || 'obliques' => BodySection.core,
+      'glutes' => BodySection.glutes,
+      'quads' ||
+      'hamstrings' ||
+      'calves' ||
+      'adductors' ||
+      'legs' ||
+      'ankles' ||
+      'hipFlexors' ||
+      'hips' => BodySection.legs,
+      _ => BodySection.fullBody,
+    };
+  }
+}
+
 /// How an exercise is loaded — decides which fields the logger shows, what a
 /// stepper's increment is, and whether tonnage doubles for two hands.
 enum LoadType {

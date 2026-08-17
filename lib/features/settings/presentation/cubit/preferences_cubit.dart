@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/haptics/app_haptics.dart';
 import '../../../../domain/entities/app_preferences.dart';
 import '../../../../domain/repositories/preferences_repository.dart';
+import '../../../../domain/values/body_metrics.dart';
 import 'preferences_state.dart';
 
 /// App-scoped. `MaterialApp` rebuilds off this, so a theme or language change
@@ -41,6 +42,22 @@ class PreferencesCubit extends Cubit<PreferencesState> {
     _haptics.enabled = enabled;
     return _update(state.preferences.copyWith(hapticsEnabled: enabled));
   }
+
+  Future<void> setUnitSystem(UnitSystem system) =>
+      _update(state.preferences.copyWith(unitSystem: system));
+
+  Future<void> setGender(Gender gender) =>
+      _update(state.preferences.copyWith(gender: gender));
+
+  /// Always centimetres, whatever the user typed it in — the form converts
+  /// before it gets here. Null clears it, which blanks BMI rather than
+  /// leaving a stale number next to a new weight.
+  Future<void> setHeightCm(double? heightCm) => _update(
+    state.preferences.copyWith(
+      heightCm: heightCm,
+      clearHeightCm: heightCm == null,
+    ),
+  );
 
   /// Persisted so a cold start reopens the tab the user was last on.
   Future<void> setLastTabIndex(int index) {

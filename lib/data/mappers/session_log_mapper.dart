@@ -17,6 +17,11 @@ extension SessionLogRowsMapper on SessionLogRows {
   );
 }
 
+extension SessionHistoryRowsMapper on SessionHistoryRows {
+  SessionHistoryEntry toEntity() =>
+      SessionHistoryEntry(log: (log: log, sets: sets).toEntity(), title: title);
+}
+
 extension SetLogRowMapper on SetLogRow {
   SetLog toEntity() => SetLog(
     id: id,

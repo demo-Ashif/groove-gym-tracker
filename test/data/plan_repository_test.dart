@@ -124,8 +124,7 @@ void main() {
         blockTemplateId: main.id,
         exerciseId: systemExerciseId('exLandminePress'),
         targetSets: 4,
-        targetRepsMin: 8,
-        targetRepsMax: 8,
+        targetReps: 8,
         perSide: true,
         progression: const ProgressionRule.linearWeekly(incrementKg: 2.5),
       );
@@ -509,13 +508,25 @@ void main() {
         isA<ParseFailure>(),
       );
 
+      // Reps or the clock, never both: two prescriptions on one slot leave the
+      // logger with no single field to write.
       expect(
         (await repository.addExercise(
           blockTemplateId: block.id,
           exerciseId: systemExerciseId('exBackSquat'),
           targetSets: 3,
-          targetRepsMin: 12,
-          targetRepsMax: 8,
+          targetReps: 8,
+          targetDurationSec: 600,
+        )).failureOrNull,
+        isA<ParseFailure>(),
+      );
+
+      expect(
+        (await repository.addExercise(
+          blockTemplateId: block.id,
+          exerciseId: systemExerciseId('exBackSquat'),
+          targetSets: 3,
+          targetReps: 0,
         )).failureOrNull,
         isA<ParseFailure>(),
       );

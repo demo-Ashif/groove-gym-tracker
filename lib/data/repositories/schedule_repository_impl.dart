@@ -43,11 +43,11 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
       Result.guard(() async => (await _dao.findById(id))?.toEntity());
 
   @override
-  Stream<List<ScheduledSession>> watchRange({
+  Stream<List<ScheduledSession>> watchActiveRange({
     required CalendarDate from,
     required CalendarDate to,
   }) => _dao
-      .watchRange(fromDate: from.toIso(), toDate: to.toIso())
+      .watchActiveRange(fromDate: from.toIso(), toDate: to.toIso())
       .map(_toEntities);
 
   @override
@@ -85,6 +85,22 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
     );
 
     return (added: diff.toInsert.length, removed: diff.toRemove.length);
+  });
+
+  @override
+  Future<Result<ScheduledSession>> createBackfillDay({
+    required CalendarDate date,
+  }) => Result.guard(() async {
+    if (date.isAfter(CalendarDate.from(_now()))) {
+      // Backfill is for training that already happened. A future date here
+      // would put a "completed" session on a day nobody has lived yet.
+      throw const ParseException(
+        'A past session cannot be dated in the future',
+      );
+    }
+
+    final row = await _dao.createBackfillDay(date: date.toIso());
+    return row.toEntity();
   });
 
   @override

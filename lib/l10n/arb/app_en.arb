@@ -286,6 +286,10 @@
   "@exCopenhagenPlank": {
     "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
   },
+  "exCrossTrainer": "Cross trainer",
+  "@exCrossTrainer": {
+    "description": "Exercise catalog entry (conditioning). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
+  },
   "exDeadBug": "Dead bug",
   "@exDeadBug": {
     "description": "Exercise catalog entry (core). Name of the movement as a lifter would say it; keep it short enough for a one-line list row."
@@ -808,6 +812,30 @@
       }
     }
   },
+  "pickerDuplicateName": "You already have an exercise with that name.",
+  "@pickerDuplicateName": {
+    "description": "Error shown when a new or renamed exercise clashes with an existing name."
+  },
+  "pickerRenameTitle": "Rename exercise",
+  "@pickerRenameTitle": {
+    "description": "Title of the sheet that renames a user-created exercise."
+  },
+  "pickerNameLabel": "Name",
+  "@pickerNameLabel": {
+    "description": "Text-field label for an exercise's name."
+  },
+  "pickerSectionLabel": "Body section",
+  "@pickerSectionLabel": {
+    "description": "Label above the body-section chooser when creating or renaming an exercise."
+  },
+  "pickerCreateTitle": "New exercise",
+  "@pickerCreateTitle": {
+    "description": "Title of the sheet that adds a custom exercise."
+  },
+  "pickerSystemNotEditable": "Built-in exercises can't be renamed.",
+  "@pickerSystemNotEditable": {
+    "description": "Explains why a seeded exercise has no rename action."
+  },
   "pickerNoResultsBody": "Try a different spelling, or add it to your catalog.",
   "@pickerNoResultsBody": {
     "description": "Empty state body in the picker."
@@ -905,6 +933,30 @@
   "profileLanguageSystem": "Match device",
   "@profileLanguageSystem": {
     "description": "Language option meaning: follow whatever language the phone is set to."
+  },
+  "profileSectionBody": "Body",
+  "@profileSectionBody": {
+    "description": "Heading above the body-measurement cards on the Profile tab."
+  },
+  "profileWeightHistoryEmpty": "No weigh-ins yet. Tap Weight above to add one.",
+  "@profileWeightHistoryEmpty": {
+    "description": "Empty state in the bodyweight history card."
+  },
+  "profileWeightHistoryTitle": "Weight history",
+  "@profileWeightHistoryTitle": {
+    "description": "Title of the card listing recent bodyweight entries."
+  },
+  "todayCheckInBody": "You've finished a cycle. Record your weight so the trend stays honest.",
+  "@todayCheckInBody": {
+    "description": "Body of the prompt asking for a bodyweight at the end of a training cycle."
+  },
+  "todayCheckInAction": "Record weight",
+  "@todayCheckInAction": {
+    "description": "Action that opens the bodyweight entry sheet from the check-in prompt."
+  },
+  "todayCheckInTitle": "Cycle check-in",
+  "@todayCheckInTitle": {
+    "description": "Title of the prompt asking for a bodyweight at the end of a training cycle."
   },
   "profileSectionAbout": "About",
   "@profileSectionAbout": {
@@ -1031,6 +1083,14 @@
         "example": "2.5"
       }
     }
+  },
+  "progressionRepCeiling": "Rep ceiling",
+  "@progressionRepCeiling": {
+    "description": "Top of the double-progression rep range — hit it and the load goes up."
+  },
+  "progressionRepFloor": "Rep floor",
+  "@progressionRepFloor": {
+    "description": "Bottom of the double-progression rep range — where reps reset after a load increase."
   },
   "progressionTopSetBackoff": "Top set + back-off",
   "@progressionTopSetBackoff": {
@@ -1174,13 +1234,257 @@
   "@scheduleWeekStripHint": {
     "description": "One-line instruction under the week strip."
   },
+  "bmiHealthy": "Healthy",
+  "@bmiHealthy": {
+    "description": "BMI band label, 18.5 to 25."
+  },
+  "bmiObese": "Obese",
+  "@bmiObese": {
+    "description": "BMI band label, 30 and above."
+  },
+  "bmiOverweight": "Overweight",
+  "@bmiOverweight": {
+    "description": "BMI band label, 25 to 30."
+  },
+  "bmiUnderweight": "Underweight",
+  "@bmiUnderweight": {
+    "description": "BMI band label, below 18.5."
+  },
+  "commonClear": "Clear",
+  "@commonClear": {
+    "description": "Removes a stored value, leaving it unset."
+  },
+  "genderFemale": "Female",
+  "@genderFemale": {
+    "description": "Gender option in the body profile."
+  },
+  "genderMale": "Male",
+  "@genderMale": {
+    "description": "Gender option in the body profile."
+  },
+  "genderOther": "Other",
+  "@genderOther": {
+    "description": "Gender option in the body profile."
+  },
+  "genderUnspecified": "Prefer not to say",
+  "@genderUnspecified": {
+    "description": "Gender option in the body profile, and the default."
+  },
+  "profileBmiLabel": "BMI",
+  "@profileBmiLabel": {
+    "description": "Label for the computed body mass index."
+  },
+  "profileBmiUnavailable": "Add your height and weight to see your BMI.",
+  "@profileBmiUnavailable": {
+    "description": "Shown in place of a BMI when height or weight is missing."
+  },
+  "profileBodyTitle": "Body",
+  "@profileBodyTitle": {
+    "description": "Title of the card holding gender, height, weight and BMI."
+  },
+  "profileHeightLabel": "Height",
+  "@profileHeightLabel": {
+    "description": "Label for the user's height."
+  },
+  "profileNotSet": "Not set",
+  "@profileNotSet": {
+    "description": "Placeholder for a measurement the user has not entered."
+  },
+  "profileWeightLabel": "Weight",
+  "@profileWeightLabel": {
+    "description": "Label for the user's most recent bodyweight."
+  },
+  "unitsCentimetres": "Centimetres",
+  "@unitsCentimetres": {
+    "description": "Stepper label when entering a height in metric."
+  },
+  "unitsCm": "{value} cm",
+  "@unitsCm": {
+    "description": "A height in centimetres.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitsFeet": "Feet",
+  "@unitsFeet": {
+    "description": "Stepper label when entering a height in imperial."
+  },
+  "unitsFeetInches": "{feet}′ {inches}″",
+  "@unitsFeetInches": {
+    "description": "A height in feet and inches, using prime and double-prime marks.",
+    "placeholders": {
+      "feet": {
+        "type": "String"
+      },
+      "inches": {
+        "type": "String"
+      }
+    }
+  },
+  "unitsImperial": "st / ft",
+  "@unitsImperial": {
+    "description": "Imperial option on the units toggle: stones and feet."
+  },
+  "unitsInches": "Inches",
+  "@unitsInches": {
+    "description": "Stepper label when entering a height in imperial."
+  },
+  "unitsKg": "{value} kg",
+  "@unitsKg": {
+    "description": "A weight in kilograms.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitsKilograms": "Kilograms",
+  "@unitsKilograms": {
+    "description": "Stepper label when entering a weight in metric."
+  },
+  "unitsMetric": "kg / cm",
+  "@unitsMetric": {
+    "description": "Metric option on the units toggle."
+  },
+  "unitsPounds": "Pounds",
+  "@unitsPounds": {
+    "description": "Stepper label when entering a weight in imperial."
+  },
+  "unitsStone": "Stone",
+  "@unitsStone": {
+    "description": "Stepper label when entering a weight in imperial."
+  },
+  "unitsStonePounds": "{stone} st {pounds} lb",
+  "@unitsStonePounds": {
+    "description": "A weight in stones and pounds.",
+    "placeholders": {
+      "stone": {
+        "type": "String"
+      },
+      "pounds": {
+        "type": "String"
+      }
+    }
+  },
+  "historyAddPastSession": "Log a past session",
+  "@historyAddPastSession": {
+    "description": "Action that backfills training done before the app was installed."
+  },
+  "historyFinishCurrentFirst": "Finish or discard the session in progress first.",
+  "@historyFinishCurrentFirst": {
+    "description": "Shown when backfilling is attempted while a session is still running."
+  },
+  "historyEmptyBody": "Finish a session and it will show up here.",
+  "@historyEmptyBody": {
+    "description": "Empty state body on the history list."
+  },
+  "historyEmptyTitle": "No sessions yet",
+  "@historyEmptyTitle": {
+    "description": "Empty state title on the history list."
+  },
+  "historyTitle": "History",
+  "@historyTitle": {
+    "description": "Title of the finished-sessions list."
+  },
+  "sessionDetailMissingBody": "It may have been discarded or deleted.",
+  "@sessionDetailMissingBody": {
+    "description": "Body shown when a session log can't be found."
+  },
+  "sessionDetailMissingTitle": "Session not found",
+  "@sessionDetailMissingTitle": {
+    "description": "Title shown when a session log can't be found."
+  },
+  "sessionDetailNoNumbers": "Logged",
+  "@sessionDetailNoNumbers": {
+    "description": "Shown for a set that was confirmed without any weight, reps or time recorded."
+  },
+  "sessionDetailNoSetsBody": "This session was finished without any sets logged.",
+  "@sessionDetailNoSetsBody": {
+    "description": "Body shown on a session detail page with no sets."
+  },
+  "sessionDetailNoSetsTitle": "Nothing logged",
+  "@sessionDetailNoSetsTitle": {
+    "description": "Title shown on a session detail page with no sets."
+  },
+  "sessionDetailPr": "PR",
+  "@sessionDetailPr": {
+    "description": "Badge on a set that set a personal record. Keep it very short."
+  },
+  "sessionDetailReps": "{count} reps",
+  "@sessionDetailReps": {
+    "description": "Rep count on a logged set in the session detail view.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionDetailRpe": "RPE {value}",
+  "@sessionDetailRpe": {
+    "description": "Rate of perceived exertion on a set or a session.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionDetailTitle": "Session",
+  "@sessionDetailTitle": {
+    "description": "Fallback title of the session detail page, before the date loads."
+  },
+  "todayViewHistory": "View history",
+  "@todayViewHistory": {
+    "description": "Action that opens the list of finished sessions."
+  },
+  "sectionArms": "Arms",
+  "@sectionArms": {
+    "description": "Body-section group heading in the exercise picker."
+  },
+  "sectionCardio": "Cardio",
+  "@sectionCardio": {
+    "description": "Body-section group heading in the exercise picker, for conditioning work."
+  },
+  "sectionChest": "Chest",
+  "@sectionChest": {
+    "description": "Body-section group heading in the exercise picker."
+  },
+  "sectionCore": "Core / Abs",
+  "@sectionCore": {
+    "description": "Body-section group heading in the exercise picker."
+  },
+  "sectionFullBody": "Full body",
+  "@sectionFullBody": {
+    "description": "Body-section group heading in the exercise picker, for lifts no single section owns."
+  },
+  "sectionGlutes": "Glutes",
+  "@sectionGlutes": {
+    "description": "Body-section group heading in the exercise picker."
+  },
+  "sectionLegs": "Legs",
+  "@sectionLegs": {
+    "description": "Body-section group heading in the exercise picker."
+  },
+  "sectionLowerBack": "Lower back",
+  "@sectionLowerBack": {
+    "description": "Body-section group heading in the exercise picker."
+  },
+  "sectionMobility": "Mobility",
+  "@sectionMobility": {
+    "description": "Body-section group heading in the exercise picker."
+  },
+  "sectionShoulders": "Shoulders",
+  "@sectionShoulders": {
+    "description": "Body-section group heading in the exercise picker."
+  },
+  "sectionUpperBack": "Upper back",
+  "@sectionUpperBack": {
+    "description": "Body-section group heading in the exercise picker."
+  },
   "sessionAddBlock": "Add block",
   "@sessionAddBlock": {
     "description": "Action that appends a block to a session."
-  },
-  "sessionAllAsPlanned": "All as planned",
-  "@sessionAllAsPlanned": {
-    "description": "One-tap action that logs every remaining set of an exercise at its target values."
   },
   "sessionBlocksSection": "Blocks",
   "@sessionBlocksSection": {
@@ -1237,6 +1541,20 @@
   "sessionNoPrevious": "No history yet",
   "@sessionNoPrevious": {
     "description": "Shown in place of the previous-set line the first time an exercise is done."
+  },
+  "sessionPreviousTime": "Prev {duration}",
+  "@sessionPreviousTime": {
+    "description": "Last session's performance on a time-based exercise, shown above the set chips.",
+    "placeholders": {
+      "duration": {
+        "type": "String",
+        "example": "10 min"
+      }
+    }
+  },
+  "setDurationLabel": "Time",
+  "@setDurationLabel": {
+    "description": "Stepper label for the minutes worked on a time-based set."
   },
   "sessionPreviousSet": "Prev {weight} kg × {reps}",
   "@sessionPreviousSet": {
@@ -1413,25 +1731,51 @@
   "@slotProgressionLabel": {
     "description": "Label for the progression-rule selector."
   },
-  "slotRepRange": "{min}–{max}",
-  "@slotRepRange": {
-    "description": "A rep range, e.g. 8–12. En dash.",
+  "slotDurationLabel": "Time per set",
+  "@slotDurationLabel": {
+    "description": "Stepper label for a time-based prescription, e.g. 10 minutes on a bike."
+  },
+  "slotDurationMinutes": "{minutes} min",
+  "@slotDurationMinutes": {
+    "description": "A prescribed working time in minutes.",
     "placeholders": {
-      "min": {
-        "type": "int"
-      },
-      "max": {
+      "minutes": {
         "type": "int"
       }
     }
   },
+  "slotLoadHelper": "Optional. Recorded so Insights can chart planned workload.",
+  "@slotLoadHelper": {
+    "description": "Helper text under the planned-weight stepper."
+  },
+  "slotLoadKg": "{weight} kg",
+  "@slotLoadKg": {
+    "description": "A planned working weight.",
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "slotLoadLabel": "Planned weight",
+  "@slotLoadLabel": {
+    "description": "Stepper label for the weight the user intends to lift."
+  },
+  "slotLoadUnset": "Not set",
+  "@slotLoadUnset": {
+    "description": "Planned-weight stepper at zero — no weight prescribed."
+  },
+  "slotMeasureReps": "Reps",
+  "@slotMeasureReps": {
+    "description": "Toggle segment — this slot is measured in repetitions."
+  },
+  "slotMeasureTime": "Time",
+  "@slotMeasureTime": {
+    "description": "Toggle segment — this slot is measured by the clock, e.g. a bike or treadmill."
+  },
   "slotRepsLabel": "Reps",
   "@slotRepsLabel": {
     "description": "Stepper label for prescribed reps."
-  },
-  "slotRepsRangeLabel": "Rep range",
-  "@slotRepsRangeLabel": {
-    "description": "Label for the two-ended rep target."
   },
   "slotRestLabel": "Rest",
   "@slotRestLabel": {

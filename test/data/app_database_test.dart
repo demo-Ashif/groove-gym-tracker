@@ -24,8 +24,8 @@ void main() {
   tearDown(() => db.close());
 
   group('schema creation', () {
-    test('creates v1 and seeds the full catalog', () async {
-      expect(db.schemaVersion, 1);
+    test('creates the current schema and seeds the full catalog', () async {
+      expect(db.schemaVersion, 2);
       expect(await db.exerciseDao.countActive(), exerciseCatalogSeed.length);
     });
 
@@ -74,6 +74,7 @@ void main() {
               id: Value(systemExerciseId('exBackSquat')),
               nameKey: const Value('exBackSquat'),
               pattern: MovementPattern.squat,
+              bodySection: BodySection.legs,
               loadType: LoadType.barbell,
               isSystem: const Value(true),
             ),
@@ -103,6 +104,7 @@ void main() {
                 nameKey: Value(nameKey),
                 customName: Value(customName),
                 pattern: MovementPattern.squat,
+                bodySection: BodySection.legs,
                 loadType: LoadType.barbell,
               ),
             );
@@ -238,6 +240,7 @@ void main() {
       final id = await db.exerciseDao.createCustom(
         name: '  Zercher squat  ',
         pattern: MovementPattern.squat,
+        bodySection: BodySection.legs,
         loadType: LoadType.barbell,
       );
 
@@ -275,6 +278,7 @@ void main() {
         await db.exerciseDao.createCustom(
           name: 'Zercher squat',
           pattern: MovementPattern.squat,
+          bodySection: BodySection.legs,
           loadType: LoadType.barbell,
         );
 
@@ -299,6 +303,7 @@ void main() {
       await db.exerciseDao.createCustom(
         name: 'Zercher squat',
         pattern: MovementPattern.squat,
+        bodySection: BodySection.legs,
         loadType: LoadType.barbell,
       );
       await pumpEventQueue();
@@ -316,12 +321,14 @@ void main() {
       final first = await db.exerciseDao.createCustom(
         name: 'First',
         pattern: MovementPattern.squat,
+        bodySection: BodySection.legs,
         loadType: LoadType.barbell,
       );
       await Future<void>.delayed(const Duration(milliseconds: 5));
       final second = await db.exerciseDao.createCustom(
         name: 'Second',
         pattern: MovementPattern.squat,
+        bodySection: BodySection.legs,
         loadType: LoadType.barbell,
       );
 
@@ -332,6 +339,7 @@ void main() {
       final id = await db.exerciseDao.createCustom(
         name: 'Zercher squat',
         pattern: MovementPattern.squat,
+        bodySection: BodySection.legs,
         loadType: LoadType.barbell,
       );
 
@@ -362,7 +370,7 @@ Future<({String exerciseId, String sessionLogId})> _seedSessionWithOneExercise(
       .into(db.scheduledSessions)
       .insertReturning(
         ScheduledSessionsCompanion.insert(
-          programId: program.id,
+          programId: Value(program.id),
           date: '2026-08-16',
           weekNumber: 1,
           kind: ScheduledSessionKind.gym,

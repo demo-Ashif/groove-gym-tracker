@@ -47,4 +47,16 @@ abstract final class AppRoutes {
 
   static const activeSessionSegment = 'session/:scheduledId';
   static const scheduledIdParam = 'scheduledId';
+
+  // --- history -------------------------------------------------------------
+  /// Finished sessions, and one of them in full. Children of /today because
+  /// that is where the last-session card lives, rendered on the root navigator
+  /// so they cover the bottom bar.
+  static const history = '$today/history';
+
+  static String sessionDetail(String sessionLogId) => '$history/$sessionLogId';
+
+  static const historySegment = 'history';
+  static const sessionDetailSegment = ':sessionLogId';
+  static const sessionLogIdParam = 'sessionLogId';
 }

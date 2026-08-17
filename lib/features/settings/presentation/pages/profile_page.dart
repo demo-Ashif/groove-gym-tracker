@@ -14,6 +14,8 @@ import '../../../../domain/entities/app_preferences.dart';
 import '../cubit/preferences_cubit.dart';
 import '../cubit/preferences_state.dart';
 import '../widgets/backup_card.dart';
+import '../widgets/body_card.dart';
+import '../widgets/weight_history_card.dart';
 
 /// The Profile tab (ADR §13.5) — the settings feature's screen.
 ///
@@ -43,6 +45,10 @@ class ProfilePage extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
             children: [
               PageHeader(l10n.profileTitle, subtitle: l10n.appTagline),
+              SectionLabel(l10n.profileSectionBody),
+              BodyCard(preferences: preferences),
+              const SizedBox(height: AppSpacing.sm),
+              const WeightHistoryCard(),
               SectionLabel(l10n.profileSectionAppearance),
               _ThemeModeCard(
                 selected: preferences.themeMode,

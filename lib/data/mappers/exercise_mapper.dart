@@ -13,6 +13,7 @@ extension ExerciseRowMapper on ExerciseRow {
     customName: customName,
     aliases: _decodeStringList(aliases, field: 'aliases', rowId: id),
     pattern: pattern,
+    bodySection: bodySection,
     loadType: loadType,
     isUnilateral: isUnilateral,
     primaryMuscles: _decodeStringList(

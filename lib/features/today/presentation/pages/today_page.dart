@@ -10,12 +10,16 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../domain/entities/scheduled_session.dart';
 import '../../../../domain/entities/session_log.dart';
 import '../../../../domain/enums/training_enums.dart';
+import '../../../../domain/repositories/check_in_repository.dart';
 import '../../../../domain/values/calendar_date.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/widgets/app_page.dart';
+import '../../../../shared/widgets/app_sheet.dart';
 import '../../../../shared/widgets/page_header.dart';
 import '../../../../shared/widgets/skeleton.dart';
 import '../../../../shared/widgets/state_views.dart';
+import '../../../settings/presentation/cubit/preferences_cubit.dart';
+import '../../../settings/presentation/widgets/weight_sheet.dart';
 import '../cubit/today_cubit.dart';
 
 /// "Did I hit the plan today, and is the line moving?" — the question the app
@@ -94,6 +98,10 @@ class _TodayBody extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
       children: [
         _SessionCard(state: state),
+        if (state.checkInDue) ...[
+          const SizedBox(height: AppSpacing.sm),
+          const _CheckInPrompt(),
+        ],
         const SizedBox(height: AppSpacing.lg),
         if (state.week.isNotEmpty) ...[
           Text(
@@ -108,13 +116,23 @@ class _TodayBody extends StatelessWidget {
           _WeekStrip(days: state.week),
         ],
         const SizedBox(height: AppSpacing.lg),
-        Text(
-          l10n.todayLastSession,
-          style: context.textStyles.labelMedium?.copyWith(
-            color: context.colors.onSurfaceVariant,
-            letterSpacing: 1.2,
-            fontWeight: FontWeight.w700,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.todayLastSession,
+                style: context.textStyles.labelMedium?.copyWith(
+                  color: context.colors.onSurfaceVariant,
+                  letterSpacing: 1.2,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => context.push(AppRoutes.history),
+              child: Text(l10n.todayViewHistory),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.xs),
         _LastSessionCard(session: state.lastSession),
@@ -388,6 +406,90 @@ class _DayCell extends StatelessWidget {
   }
 }
 
+/// Asks for a bodyweight once a training cycle has ended.
+///
+/// Appears on Today rather than only in the Profile tab because a check-in
+/// nobody is prompted for is a check-in nobody records, and the weight series
+/// is what every trend in Insights is built on.
+class _CheckInPrompt extends StatelessWidget {
+  const _CheckInPrompt();
+
+  Future<void> _record(BuildContext context) async {
+    final repository = getIt<CheckInRepository>();
+    final unitSystem = context
+        .read<PreferencesCubit>()
+        .state
+        .preferences
+        .unitSystem;
+
+    final current = await repository.watchLatestWeight().first;
+    if (!context.mounted) return;
+
+    final result = await AppSheet.show<double>(
+      context,
+      builder: (_) =>
+          WeightSheet(initialKg: current?.weightKg, unitSystem: unitSystem),
+    );
+    if (result == null || !context.mounted) return;
+
+    final recorded = await repository.record(
+      date: CalendarDate.today(),
+      weightKg: result,
+    );
+    if (!context.mounted) return;
+
+    if (recorded.failureOrNull != null) {
+      context.showSnackBar(context.l10n.stateErrorBody, isError: true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
+    return AppCard(
+      color: context.colors.secondaryContainer,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.monitor_weight_outlined,
+                color: context.colors.onSecondaryContainer,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Expanded(
+                child: Text(
+                  l10n.todayCheckInTitle,
+                  style: context.textStyles.titleSmall?.copyWith(
+                    color: context.colors.onSecondaryContainer,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            l10n.todayCheckInBody,
+            style: context.textStyles.bodyMedium?.copyWith(
+              color: context.colors.onSecondaryContainer,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.tonal(
+              onPressed: () => _record(context),
+              child: Text(l10n.todayCheckInAction),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _LastSessionCard extends StatelessWidget {
   const _LastSessionCard({required this.session});
 
@@ -413,6 +515,9 @@ class _LastSessionCard extends StatelessWidget {
     }
 
     return AppCard(
+      // The recap was a dead end before: it showed three numbers with no way
+      // to see what they were made of.
+      onTap: () => context.push(AppRoutes.sessionDetail(last.id)),
       child: Row(
         children: [
           Expanded(
@@ -424,6 +529,11 @@ class _LastSessionCard extends StatelessWidget {
           _Pill(label: l10n.summarySets(last.completedSets)),
           const SizedBox(width: AppSpacing.xs),
           _Pill(label: l10n.summaryDuration(last.duration.inMinutes)),
+          const SizedBox(width: AppSpacing.xxs),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: context.colors.onSurfaceVariant,
+          ),
         ],
       ),
     );

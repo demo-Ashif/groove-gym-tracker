@@ -59,6 +59,14 @@ class Program extends Equatable {
     return phases.map((phase) => phase.endWeek).reduce((a, b) => a > b ? a : b);
   }
 
+  /// The 1-based program week [date] falls in, or null before the program
+  /// starts. Week 1 is the seven days from [startDate] inclusive.
+  int? weekOf(CalendarDate date) {
+    final elapsed = startDate.daysUntil(date);
+    if (elapsed < 0) return null;
+    return elapsed ~/ 7 + 1;
+  }
+
   /// The phase covering a 1-based program week, or null past the end.
   Phase? phaseForWeek(int week) {
     for (final phase in phases) {
@@ -236,8 +244,8 @@ class ExerciseTemplate extends Equatable {
     required this.exerciseId,
     required this.orderIndex,
     required this.targetSets,
-    this.targetRepsMin,
-    this.targetRepsMax,
+    this.targetReps,
+    this.targetDurationSec,
     this.targetLoadKg,
     this.targetLoadText,
     this.targetRpe,
@@ -258,10 +266,19 @@ class ExerciseTemplate extends Equatable {
   final int orderIndex;
   final int targetSets;
 
-  /// A rep target is a range; a fixed prescription sets both ends equal.
-  final int? targetRepsMin;
-  final int? targetRepsMax;
+  /// A single prescribed rep count. Null for time-based work, where
+  /// [targetDurationSec] carries the prescription instead — the two are
+  /// mutually exclusive, enforced by the repository.
+  final int? targetReps;
 
+  /// Prescribed working time in seconds, for exercises measured by the clock
+  /// rather than by reps: stationary bike, treadmill, cross trainer, plank.
+  /// Null for rep-based work.
+  final int? targetDurationSec;
+
+  /// Planned working load. Optional — a prescription may legitimately say
+  /// "3 × 10" with the weight left to the day — but recording it is what lets
+  /// Insights chart planned workload against actual.
   final double? targetLoadKg;
 
   /// For prescriptions that aren't a number — "bodyweight", "light band".
@@ -280,17 +297,25 @@ class ExerciseTemplate extends Equatable {
   final ProgressionRule progression;
   final String? notes;
 
-  bool get hasRepRange =>
-      targetRepsMin != null &&
-      targetRepsMax != null &&
-      targetRepsMin != targetRepsMax;
+  /// Measured by the clock rather than by reps. Drives which stepper the slot
+  /// form shows and which field the logger writes.
+  bool get isTimeBased => targetDurationSec != null;
 
   /// Total prescribed reps, counting both sides for unilateral work. This is
-  /// the denominator adherence is measured against (ADR §4.4).
+  /// the denominator adherence is measured against (ADR §4.4). Null for
+  /// time-based work, which has no rep denominator to measure against.
   int? get plannedReps {
-    final reps = targetRepsMin ?? targetRepsMax;
+    final reps = targetReps;
     if (reps == null) return null;
     return reps * targetSets * (perSide ? 2 : 1);
+  }
+
+  /// Total prescribed working time across every set, for the same role
+  /// [plannedReps] plays for rep-based work.
+  int? get plannedDurationSec {
+    final duration = targetDurationSec;
+    if (duration == null) return null;
+    return duration * targetSets;
   }
 
   @override
@@ -300,8 +325,8 @@ class ExerciseTemplate extends Equatable {
     exerciseId,
     orderIndex,
     targetSets,
-    targetRepsMin,
-    targetRepsMax,
+    targetReps,
+    targetDurationSec,
     targetLoadKg,
     targetLoadText,
     targetRpe,

@@ -133,6 +133,7 @@ String exerciseDisplayName({
     'exBattleRopes' => l10n.exBattleRopes,
     'exSledSprint' => l10n.exSledSprint,
     'exStationaryBike' => l10n.exStationaryBike,
+    'exCrossTrainer' => l10n.exCrossTrainer,
     'exSwimming' => l10n.exSwimming,
     'exCatCow' => l10n.exCatCow,
     'exWorldsGreatestStretch' => l10n.exWorldsGreatestStretch,

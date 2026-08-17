@@ -15,6 +15,7 @@ class Exercise extends Equatable {
   const Exercise({
     required this.id,
     required this.pattern,
+    required this.bodySection,
     required this.loadType,
     this.nameKey,
     this.customName,
@@ -42,6 +43,11 @@ class Exercise extends Equatable {
   final List<String> aliases;
 
   final MovementPattern pattern;
+
+  /// How the catalog picker files this exercise. Distinct from [pattern],
+  /// which is the volume-balance axis Insights reads.
+  final BodySection bodySection;
+
   final LoadType loadType;
   final bool isUnilateral;
 
@@ -69,6 +75,7 @@ class Exercise extends Equatable {
     customName,
     aliases,
     pattern,
+    bodySection,
     loadType,
     isUnilateral,
     primaryMuscles,

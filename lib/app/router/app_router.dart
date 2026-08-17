@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/utils/extensions/context_extensions.dart';
 import '../../features/active_session/presentation/pages/active_session_page.dart';
+import '../../features/history/presentation/pages/history_page.dart';
+import '../../features/history/presentation/pages/session_detail_page.dart';
 import '../../features/insights/presentation/pages/insights_page.dart';
 import '../../features/plan/presentation/pages/plan_page.dart';
 import '../../features/plan/presentation/pages/program_editor_page.dart';
@@ -50,6 +52,21 @@ abstract final class AppRouter {
                         scheduledSessionId:
                             state.pathParameters[AppRoutes.scheduledIdParam]!,
                       ),
+                    ),
+                    GoRoute(
+                      path: AppRoutes.historySegment,
+                      parentNavigatorKey: rootKey,
+                      builder: (context, state) => const HistoryPage(),
+                      routes: [
+                        GoRoute(
+                          path: AppRoutes.sessionDetailSegment,
+                          parentNavigatorKey: rootKey,
+                          builder: (context, state) => SessionDetailPage(
+                            sessionLogId: state
+                                .pathParameters[AppRoutes.sessionLogIdParam]!,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

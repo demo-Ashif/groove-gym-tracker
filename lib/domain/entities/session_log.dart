@@ -151,3 +151,19 @@ class SessionLog extends Equatable {
     sets,
   ];
 }
+
+/// A finished session as the history list shows it: the log, plus the title of
+/// the day it was logged against.
+///
+/// [title] is null for a session with no template behind it — a cricket day
+/// someone decided to lift on, or a day whose program has since been deleted.
+/// The session still belongs in history; the list falls back to its date.
+class SessionHistoryEntry extends Equatable {
+  const SessionHistoryEntry({required this.log, this.title});
+
+  final SessionLog log;
+  final String? title;
+
+  @override
+  List<Object?> get props => [log, title];
+}

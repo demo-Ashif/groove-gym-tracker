@@ -4,16 +4,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/backup/backup_service.dart';
 import '../../data/db/app_database.dart';
 import '../../data/repositories/exercise_repository_impl.dart';
+import '../../data/repositories/check_in_repository_impl.dart';
 import '../../data/repositories/log_repository_impl.dart';
 import '../../data/repositories/plan_repository_impl.dart';
 import '../../data/repositories/schedule_repository_impl.dart';
 import '../../data/repositories/shared_prefs_preferences_repository.dart';
 import '../../domain/repositories/exercise_repository.dart';
+import '../../domain/repositories/check_in_repository.dart';
 import '../../domain/repositories/log_repository.dart';
 import '../../domain/repositories/plan_repository.dart';
 import '../../domain/repositories/preferences_repository.dart';
 import '../../domain/repositories/schedule_repository.dart';
 import '../../features/active_session/presentation/cubit/active_session_cubit.dart';
+import '../../features/history/presentation/cubit/history_cubit.dart';
+import '../../features/history/presentation/cubit/session_detail_cubit.dart';
 import '../../features/plan/presentation/cubit/plan_list_cubit.dart';
 import '../../features/plan/presentation/cubit/program_editor_cubit.dart';
 import '../../features/plan/presentation/cubit/session_editor_cubit.dart';
@@ -68,6 +72,9 @@ Future<void> configureDependencies(
     ..registerLazySingleton<LogRepository>(
       () => LogRepositoryImpl(getIt<AppDatabase>().logDao),
     )
+    ..registerLazySingleton<CheckInRepository>(
+      () => CheckInRepositoryImpl(getIt<AppDatabase>().checkInDao),
+    )
     ..registerLazySingleton<ScheduleRepository>(
       () => ScheduleRepositoryImpl(
         dao: getIt<AppDatabase>().scheduleDao,
@@ -91,6 +98,7 @@ Future<void> configureDependencies(
         planRepository: getIt(),
         scheduleRepository: getIt(),
         logRepository: getIt(),
+        checkInRepository: getIt(),
       ),
     )
     ..registerFactoryParam<ActiveSessionCubit, String, void>(
@@ -100,6 +108,16 @@ Future<void> configureDependencies(
         scheduleRepository: getIt(),
         exerciseRepository: getIt(),
         scheduledSessionId: scheduledSessionId,
+      ),
+    )
+    ..registerFactory<HistoryCubit>(
+      () => HistoryCubit(logRepository: getIt(), exerciseRepository: getIt()),
+    )
+    ..registerFactoryParam<SessionDetailCubit, String, void>(
+      (sessionLogId, _) => SessionDetailCubit(
+        logRepository: getIt(),
+        exerciseRepository: getIt(),
+        sessionLogId: sessionLogId,
       ),
     )
     ..registerFactoryParam<ProgramEditorCubit, String, void>(

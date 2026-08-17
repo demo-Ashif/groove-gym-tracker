@@ -16,6 +16,7 @@ void main() {
     id: 'ex-1',
     nameKey: 'exBackSquat',
     pattern: MovementPattern.squat,
+    bodySection: BodySection.legs,
     loadType: loadType,
     isUnilateral: unilateral,
   );

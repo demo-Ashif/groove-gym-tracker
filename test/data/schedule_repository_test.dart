@@ -60,6 +60,11 @@ void main() {
       await plan.addSession(phaseId: phase.id, code: code, title: 'Day $code');
     }
 
+    // Active, because that is the only state Today can read. Calling this for
+    // a second program deactivates the first — which is the behaviour the
+    // overlap test below depends on.
+    await plan.setActiveProgram(program.id);
+
     return program.id;
   }
 
@@ -259,7 +264,7 @@ void main() {
     await schedule.commitSchedule(programId: programId, pattern: weekly);
 
     final week = await schedule
-        .watchRange(from: start, to: start.addDays(6))
+        .watchActiveRange(from: start, to: start.addDays(6))
         .first;
 
     // `YYYY-MM-DD` sorts lexicographically in calendar order, which is what
@@ -267,6 +272,92 @@ void main() {
     expect(week, hasLength(7));
     expect(week.first.date, start);
     expect(week.last.date, start.addDays(6));
+  });
+
+  test(
+    'two programs over the same dates yield one day each, not two',
+    () async {
+      // The exact shape of the bug: two programs both starting today, both
+      // committed. Today asked for "16 August" and got one row per program.
+      final first = await seedProgram();
+      await schedule.commitSchedule(programId: first, pattern: weekly);
+
+      final second = await seedProgram();
+      await schedule.commitSchedule(programId: second, pattern: weekly);
+
+      final week = await schedule
+          .watchActiveRange(from: start, to: start.addDays(6))
+          .first;
+
+      expect(week, hasLength(7), reason: 'one row per date, not per program');
+      expect(
+        week.every((day) => day.programId == second),
+        isTrue,
+        reason: 'the days come from the active program, which is the newer one',
+      );
+
+      // Both programs still hold their own calendars — nothing was deleted,
+      // only scoped out of Today.
+      expect(await schedule.watchProgramSchedule(first).first, hasLength(14));
+    },
+  );
+
+  test('no active program means Today sees no days at all', () async {
+    final programId = await seedProgram();
+    await schedule.commitSchedule(programId: programId, pattern: weekly);
+    await plan.setActiveProgram('nonexistent-id');
+
+    expect(
+      await schedule.watchActiveRange(from: start, to: start.addDays(6)).first,
+      isEmpty,
+    );
+  });
+
+  group('backfill', () {
+    test('creates a day belonging to no program', () async {
+      const past = CalendarDate(2026, 7, 4);
+
+      final day = (await schedule.createBackfillDay(date: past)).dataOrNull!;
+
+      expect(day.date, past);
+      // No program, so it cannot shift the adherence denominator of a block
+      // it was never part of.
+      expect(day.programId, isNull);
+      expect(day.sessionTemplateId, isNull);
+      expect(day.weekNumber, 0);
+    });
+
+    test('a backfilled day stays out of the active program week', () async {
+      final programId = await seedProgram();
+      await schedule.commitSchedule(programId: programId, pattern: weekly);
+
+      await schedule.createBackfillDay(date: start.addDays(1));
+
+      final week = await schedule
+          .watchActiveRange(from: start, to: start.addDays(6))
+          .first;
+
+      // It is a record, not a plan: Today's strip shows the program only.
+      expect(week, hasLength(7));
+      expect(week.every((day) => day.programId == programId), isTrue);
+    });
+
+    test('refuses a future date', () async {
+      final result = await schedule.createBackfillDay(
+        date: CalendarDate.from(now).addDays(1),
+      );
+
+      // "Completed" on a day nobody has lived yet is not a record.
+      expect(result.failureOrNull, isA<ParseFailure>());
+    });
+
+    test('today itself is allowed', () async {
+      final result = await schedule.createBackfillDay(
+        date: CalendarDate.from(now),
+      );
+
+      expect(result.failureOrNull, isNull);
+    });
   });
 
   test('rescheduling moves a day without touching its neighbours', () async {

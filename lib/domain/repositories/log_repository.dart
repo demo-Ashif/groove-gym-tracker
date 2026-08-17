@@ -10,11 +10,23 @@ abstract interface class LogRepository {
 
   Stream<SessionLog?> watchSession(String id);
 
+  /// Every finished session, newest first — the history list.
+  ///
+  /// Excludes the session in progress: that one is offered as something to
+  /// resume, and history is a record of what happened.
+  Stream<List<SessionHistoryEntry>> watchFinishedSessions({int limit});
+
   /// The most recent session logged against a scheduled day, for the recap.
   Future<Result<SessionLog?>> latestForScheduled(String scheduledSessionId);
 
+  /// Starts a session on [scheduledSessionId].
+  ///
+  /// [startedAt] defaults to now. Backfilling a past workout passes the date
+  /// it actually happened, so history sorts and charts by when the training
+  /// was done rather than by when it was typed in.
   Future<Result<SessionLog>> startSession({
     required String scheduledSessionId,
+    DateTime? startedAt,
     double? bodyweightKg,
   });
 

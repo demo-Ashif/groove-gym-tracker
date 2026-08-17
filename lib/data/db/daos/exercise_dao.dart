@@ -25,7 +25,7 @@ class ExerciseDao extends DatabaseAccessor<AppDatabase>
     return (select(exercises)
           ..where((row) => row.deletedAt.isNull())
           ..orderBy([
-            (row) => OrderingTerm(expression: row.pattern),
+            (row) => OrderingTerm(expression: row.bodySection),
             (row) => OrderingTerm(expression: row.isSystem),
           ]))
         .watch();
@@ -73,6 +73,7 @@ class ExerciseDao extends DatabaseAccessor<AppDatabase>
   Future<String> createCustom({
     required String name,
     required MovementPattern pattern,
+    required BodySection bodySection,
     required LoadType loadType,
     bool isUnilateral = false,
     List<String> primaryMuscles = const [],
@@ -82,6 +83,7 @@ class ExerciseDao extends DatabaseAccessor<AppDatabase>
       ExercisesCompanion.insert(
         customName: Value(name.trim()),
         pattern: pattern,
+        bodySection: bodySection,
         loadType: loadType,
         isUnilateral: Value(isUnilateral),
         primaryMuscles: Value(jsonEncode(primaryMuscles)),
@@ -89,6 +91,54 @@ class ExerciseDao extends DatabaseAccessor<AppDatabase>
       ),
     );
     return row.id;
+  }
+
+  /// Renames a user-created exercise and optionally re-files it.
+  ///
+  /// System rows are untouchable by design: their name is an ARB key that
+  /// every locale resolves, and one device's rename would relabel the same
+  /// movement in everyone's history (ADR §12.4).
+  Future<void> updateCustom({
+    required String id,
+    required String name,
+    BodySection? bodySection,
+  }) async {
+    await (update(
+      exercises,
+    )..where((row) => row.id.equals(id) & row.isSystem.equals(false))).write(
+      ExercisesCompanion(
+        customName: Value(name.trim()),
+        bodySection: bodySection == null
+            ? const Value.absent()
+            : Value(bodySection),
+        updatedAt: Value(DateTime.now()),
+        syncState: const Value(SyncState.pendingUpdate),
+      ),
+    );
+  }
+
+  /// A live custom exercise whose name matches, case- and whitespace-
+  /// insensitively. [excludingId] lets a rename ignore the row being renamed.
+  ///
+  /// Only searches `custom_name`: a seeded row's name is an ARB key, so SQL
+  /// cannot compare it against typed text. Collisions with system names are
+  /// caught in the presentation layer, which is the only place that can
+  /// resolve them for the active locale.
+  Future<ExerciseRow?> findCustomByName(
+    String name, {
+    String? excludingId,
+  }) async {
+    final needle = name.trim().toLowerCase();
+    if (needle.isEmpty) return null;
+
+    return (select(exercises)..where((row) {
+          final match =
+              row.deletedAt.isNull() & row.customName.lower().equals(needle);
+          return excludingId == null
+              ? match
+              : match & row.id.equals(excludingId).not();
+        }))
+        .getSingleOrNull();
   }
 
   /// Records a confirmed match so the catalog gets smarter with every import

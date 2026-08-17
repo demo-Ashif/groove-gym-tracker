@@ -126,10 +126,18 @@ class ExerciseTemplates extends Table with SyncedRow {
 
   IntColumn get targetSets => integer()();
 
-  /// A rep target is a range; a fixed prescription sets both ends equal.
-  IntColumn get targetRepsMin => integer().nullable()();
-  IntColumn get targetRepsMax => integer().nullable()();
+  /// A single prescribed rep count. Mutually exclusive with
+  /// [targetDurationSec] — a slot is measured by reps or by the clock, never
+  /// both. Enforced in the repository rather than by a CHECK, because a slot
+  /// mid-edit may legitimately have neither.
+  IntColumn get targetReps => integer().nullable()();
 
+  /// Prescribed working time in seconds, for exercises the clock measures:
+  /// stationary bike, treadmill, cross trainer, plank.
+  IntColumn get targetDurationSec => integer().nullable()();
+
+  /// Planned working load. Optional, but recording it is what lets Insights
+  /// chart planned workload against what was actually lifted.
   RealColumn get targetLoadKg => real().nullable()();
 
   /// For prescriptions that aren't a number — "bodyweight", "light band".
@@ -163,8 +171,12 @@ class ExerciseTemplates extends Table with SyncedRow {
 )
 @DataClassName('ScheduledSessionRow')
 class ScheduledSessions extends Table with SyncedRow {
-  TextColumn get programId =>
-      text().references(Programs, #id, onDelete: KeyAction.cascade)();
+  /// Null for a day that belongs to no program — a session logged after the
+  /// fact for training that happened before the app existed (ADR §8.2
+  /// backfill). Every day the scheduler materializes has one.
+  TextColumn get programId => text()
+      .references(Programs, #id, onDelete: KeyAction.cascade)
+      .nullable()();
 
   /// Null for rest, cricket and custom days, which have no template behind
   /// them.

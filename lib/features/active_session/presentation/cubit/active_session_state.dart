@@ -26,13 +26,6 @@ sealed class ActiveSessionState with _$ActiveSessionState {
     /// Last completed set per exercise, from earlier sessions. What a set chip
     /// pre-fills from.
     required Map<String, SetLog> previousSets,
-
-    /// When the current rest interval started, and how long it runs for.
-    /// **A timestamp, never a running counter** — the OS will suspend the app
-    /// mid-rest, and a counter would resume where it left off rather than
-    /// where the clock is (ADR §9.4).
-    DateTime? restStartedAt,
-    @Default(0) int restSeconds,
   }) = ActiveSessionData;
 
   /// The session ended or was discarded — leave the screen.

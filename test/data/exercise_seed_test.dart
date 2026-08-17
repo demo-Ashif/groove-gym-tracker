@@ -30,6 +30,51 @@ void main() {
     }
   });
 
+  test('every seeded exercise files under a real body section', () {
+    // `fullBody` is the derivation's fallback for a muscle it doesn't know, so
+    // a row landing there unexpectedly means the muscle list gained a key the
+    // mapping never learned — and the picker quietly buries the exercise.
+    final unclassified = <String>[];
+
+    for (final exercise in exerciseCatalogSeed) {
+      final section = BodySection.forExercise(
+        pattern: exercise.pattern,
+        primaryMuscles: exercise.primaryMuscles,
+      );
+
+      if (section == BodySection.fullBody &&
+          exercise.primaryMuscles.isNotEmpty &&
+          exercise.primaryMuscles.first != 'fullBody') {
+        unclassified.add('${exercise.nameKey} -> ${exercise.primaryMuscles}');
+      }
+    }
+
+    expect(
+      unclassified,
+      isEmpty,
+      reason: 'muscles with no section mapping:\n${unclassified.join('\n')}',
+    );
+  });
+
+  test('conditioning and mobility file by pattern, not by muscle', () {
+    // A treadmill's `legs` is true, but filing it beside squats is not what
+    // anyone searching the picker is looking for.
+    expect(
+      BodySection.forExercise(
+        pattern: MovementPattern.conditioning,
+        primaryMuscles: const ['legs'],
+      ),
+      BodySection.cardio,
+    );
+    expect(
+      BodySection.forExercise(
+        pattern: MovementPattern.mobility,
+        primaryMuscles: const ['spine'],
+      ),
+      BodySection.mobility,
+    );
+  });
+
   test('name keys and derived ids are unique', () {
     final keys = exerciseCatalogSeed.map((e) => e.nameKey).toList();
     final ids = keys.map(systemExerciseId).toSet();

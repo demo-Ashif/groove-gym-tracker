@@ -7,6 +7,8 @@ import '../../../../core/error/failure.dart';
 import '../../../../domain/entities/plan.dart';
 import '../../../../domain/entities/scheduled_session.dart';
 import '../../../../domain/entities/session_log.dart';
+import '../../../../domain/entities/check_in.dart';
+import '../../../../domain/repositories/check_in_repository.dart';
 import '../../../../domain/repositories/log_repository.dart';
 import '../../../../domain/repositories/plan_repository.dart';
 import '../../../../domain/repositories/schedule_repository.dart';
@@ -39,6 +41,11 @@ sealed class TodayState with _$TodayState {
 
     /// The last finished session, for the recap.
     SessionLog? lastSession,
+
+    /// A training cycle has ended with no weigh-in recorded inside it, so the
+    /// screen asks for one. False whenever anything is missing rather than
+    /// nagging on incomplete information.
+    @Default(false) bool checkInDue,
   }) = TodayData;
 
   const factory TodayState.failure(Failure failure) = TodayFailure;
@@ -53,10 +60,12 @@ class TodayCubit extends Cubit<TodayState> {
     required PlanRepository planRepository,
     required ScheduleRepository scheduleRepository,
     required LogRepository logRepository,
+    required CheckInRepository checkInRepository,
     DateTime Function()? now,
   }) : _plan = planRepository,
        _schedule = scheduleRepository,
        _log = logRepository,
+       _checkIns = checkInRepository,
        _now = now ?? DateTime.now,
        super(const TodayLoading()) {
     _programSubscription = _plan.watchActiveProgram().listen((program) {
@@ -67,7 +76,7 @@ class TodayCubit extends Cubit<TodayState> {
 
     final today = CalendarDate.from(_now());
     _weekSubscription = _schedule
-        .watchRange(from: today.addDays(-3), to: today.addDays(3))
+        .watchActiveRange(from: today.addDays(-3), to: today.addDays(3))
         .listen((days) {
           _week = days;
           _weekLoaded = true;
@@ -79,22 +88,30 @@ class TodayCubit extends Cubit<TodayState> {
       _activeSession = session;
       _emit();
     }, onError: _onError);
+
+    _checkInSubscription = _checkIns.watchLatestWeight().listen((checkIn) {
+      _latestCheckIn = checkIn;
+      _emit();
+    }, onError: _onError);
   }
 
   final PlanRepository _plan;
   final ScheduleRepository _schedule;
   final LogRepository _log;
+  final CheckInRepository _checkIns;
   final DateTime Function() _now;
 
   late final StreamSubscription<void> _programSubscription;
   late final StreamSubscription<void> _weekSubscription;
   late final StreamSubscription<void> _sessionSubscription;
+  late final StreamSubscription<void> _checkInSubscription;
 
   Program? _program;
   List<ScheduledSession> _week = const [];
   SessionLog? _activeSession;
   SessionLog? _lastSession;
   SessionTemplate? _template;
+  CheckIn? _latestCheckIn;
 
   bool _programLoaded = false;
   bool _weekLoaded = false;
@@ -130,6 +147,36 @@ class TodayCubit extends Cubit<TodayState> {
     if (!isClosed) _emit();
   }
 
+  /// Whether a cycle has ended without a weigh-in inside it.
+  ///
+  /// "Cycle" is a **phase**, which is the unit the plan already models and the
+  /// one `checkInDueAtEnd` was put on the table for (ADR §10.1). The prompt
+  /// fires once per phase: recording a weight lands it inside the current
+  /// phase's window, which is exactly the condition being tested, so the card
+  /// disappears on its own rather than needing a dismissed flag.
+  ///
+  /// Everything unknown means "not due". A prompt raised on missing data is a
+  /// nag, and this one asks the user to go and stand on a scale.
+  bool get _isCheckInDue {
+    final program = _program;
+    if (program == null) return false;
+
+    final week = program.weekOf(_today);
+    if (week == null) return false;
+
+    final phase = program.phaseForWeek(week);
+    if (phase == null || !phase.checkInDueAtEnd) return false;
+
+    // Only once the phase is actually over — mid-block is not a cycle end.
+    if (week < phase.endWeek) return false;
+
+    final phaseStart = program.startDate.addDays((phase.startWeek - 1) * 7);
+    final latest = _latestCheckIn?.date;
+
+    // Never weighed, or last weighed before this phase began.
+    return latest == null || latest.isBefore(phaseStart);
+  }
+
   void _emit() {
     if (!_programLoaded || !_weekLoaded) return;
 
@@ -141,6 +188,7 @@ class TodayCubit extends Cubit<TodayState> {
         template: _template,
         activeSession: _activeSession,
         lastSession: _lastSession,
+        checkInDue: _isCheckInDue,
       ),
     );
   }
@@ -150,6 +198,7 @@ class TodayCubit extends Cubit<TodayState> {
     _programSubscription.cancel();
     _weekSubscription.cancel();
     _sessionSubscription.cancel();
+    _checkInSubscription.cancel();
     return super.close();
   }
 }

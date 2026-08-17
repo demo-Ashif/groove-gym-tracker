@@ -33,6 +33,32 @@ extension MovementPatternLabel on MovementPattern {
   };
 }
 
+extension SkipReasonLabel on SkipReason {
+  String label(L10n l10n) => switch (this) {
+    SkipReason.pain => l10n.skipPain,
+    SkipReason.time => l10n.skipTime,
+    SkipReason.equipment => l10n.skipEquipment,
+    SkipReason.feltOff => l10n.skipFeltOff,
+    SkipReason.other => l10n.skipOther,
+  };
+}
+
+extension BodySectionLabel on BodySection {
+  String label(L10n l10n) => switch (this) {
+    BodySection.chest => l10n.sectionChest,
+    BodySection.upperBack => l10n.sectionUpperBack,
+    BodySection.lowerBack => l10n.sectionLowerBack,
+    BodySection.shoulders => l10n.sectionShoulders,
+    BodySection.arms => l10n.sectionArms,
+    BodySection.core => l10n.sectionCore,
+    BodySection.glutes => l10n.sectionGlutes,
+    BodySection.legs => l10n.sectionLegs,
+    BodySection.fullBody => l10n.sectionFullBody,
+    BodySection.cardio => l10n.sectionCardio,
+    BodySection.mobility => l10n.sectionMobility,
+  };
+}
+
 extension ProgressionRuleLabel on ProgressionRule {
   /// Short name, for a selector.
   String label(L10n l10n) => switch (this) {

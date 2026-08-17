@@ -18,7 +18,6 @@ import '../../../../shared/widgets/state_views.dart';
 import '../../../plan/presentation/widgets/plan_labels.dart';
 import '../cubit/active_session_cubit.dart';
 import '../cubit/active_session_state.dart';
-import '../widgets/rest_timer_bar.dart';
 import '../widgets/set_chip.dart';
 import '../widgets/set_editor_sheet.dart';
 import 'finalize_sheet.dart';
@@ -39,10 +38,26 @@ class ActiveSessionPage extends StatelessWidget {
   }
 }
 
-class _ActiveSessionView extends StatelessWidget {
+class _ActiveSessionView extends StatefulWidget {
   const _ActiveSessionView();
 
-  Future<void> _finish(BuildContext context) async {
+  @override
+  State<_ActiveSessionView> createState() => _ActiveSessionViewState();
+}
+
+class _ActiveSessionViewState extends State<_ActiveSessionView> {
+  /// True while [_finish] is driving its own teardown.
+  ///
+  /// Finalizing makes the cubit emit `finished`, and the listener's reflex is
+  /// to pop. During the finish flow the summary sheet is the topmost route, so
+  /// that pop would close the *sheet* and leave this page behind rendering an
+  /// empty body — the black screen. While this is set, the finish flow owns
+  /// the teardown and pops the page itself, once, at the end.
+  bool _finishing = false;
+
+  /// Reads `State.context` rather than taking one, so every `mounted` guard
+  /// below is a check on the context actually being used.
+  Future<void> _finish() async {
     final cubit = context.read<ActiveSessionCubit>();
     final state = cubit.state;
     if (state is! ActiveSessionData) return;
@@ -51,7 +66,9 @@ class _ActiveSessionView extends StatelessWidget {
       context,
       builder: (_) => const FinalizeSheet(),
     );
-    if (result == null || !context.mounted) return;
+    if (result == null || !mounted) return;
+
+    _finishing = true;
 
     final failure = await cubit.finalizeSession(
       sessionRpe: result.sessionRpe,
@@ -59,15 +76,16 @@ class _ActiveSessionView extends StatelessWidget {
       notes: result.notes,
     );
 
-    if (!context.mounted) return;
+    if (!mounted) return;
     if (failure != null) {
+      // Still on the session, still logged in progress — hand the screen back
+      // to the listener rather than stranding it.
+      _finishing = false;
       context.showSnackBar(context.l10n.stateErrorBody, isError: true);
       return;
     }
 
     getIt<AppHaptics>().medium();
-    // The cubit's stream reports the session gone and the page pops itself;
-    // the summary is shown on the way out.
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -78,9 +96,14 @@ class _ActiveSessionView extends StatelessWidget {
         exercisesById: state.exercisesById,
       ),
     );
+
+    // The sheet is gone; now the page can go. Guarded because the user may
+    // have backed out of the whole route while the summary was up.
+    if (!mounted) return;
+    if (context.canPop()) context.pop();
   }
 
-  Future<void> _discard(BuildContext context) async {
+  Future<void> _discard() async {
     final cubit = context.read<ActiveSessionCubit>();
     final l10n = context.l10n;
 
@@ -90,10 +113,10 @@ class _ActiveSessionView extends StatelessWidget {
       message: l10n.sessionDiscardBody,
       confirmLabel: l10n.sessionDiscard,
     );
-    if (!confirmed) return;
+    if (!confirmed || !mounted) return;
 
     final failure = await cubit.discardSession();
-    if (failure != null && context.mounted) {
+    if (failure != null && mounted) {
       context.showSnackBar(l10n.stateErrorBody, isError: true);
     }
   }
@@ -105,8 +128,15 @@ class _ActiveSessionView extends StatelessWidget {
     return BlocConsumer<ActiveSessionCubit, ActiveSessionState>(
       listenWhen: (_, current) => current is ActiveSessionFinished,
       listener: (context, _) {
+        // The session ended somewhere else — discarded from the menu, or
+        // finalized on another screen. The finish flow does its own popping.
+        if (_finishing) return;
         if (context.canPop()) context.pop();
       },
+      // Never rebuild into the finished state: the last frame of the session
+      // stays on screen underneath the summary sheet, instead of blanking out
+      // while the route tears down.
+      buildWhen: (_, current) => current is! ActiveSessionFinished,
       builder: (context, state) => Scaffold(
         appBar: AppBar(
           title: Text(switch (state) {
@@ -119,7 +149,7 @@ class _ActiveSessionView extends StatelessWidget {
                 icon: const Icon(Icons.more_vert_rounded),
                 itemBuilder: (context) => [
                   PopupMenuItem<void>(
-                    onTap: () => _discard(context),
+                    onTap: () => _discard(),
                     child: Text(
                       l10n.sessionDiscard,
                       style: TextStyle(color: context.colors.error),
@@ -128,22 +158,10 @@ class _ActiveSessionView extends StatelessWidget {
                 ],
               ),
           ],
-          bottom: switch (state) {
-            ActiveSessionData(:final restStartedAt?, :final restSeconds) =>
-              PreferredSize(
-                preferredSize: const Size.fromHeight(44),
-                child: RestTimerBar(
-                  startedAt: restStartedAt,
-                  totalSeconds: restSeconds,
-                  onDismiss: context.read<ActiveSessionCubit>().dismissRest,
-                ),
-              ),
-            _ => null,
-          },
         ),
         floatingActionButton: state is ActiveSessionData
             ? FloatingActionButton.extended(
-                onPressed: () => _finish(context),
+                onPressed: () => _finish(),
                 icon: const Icon(Icons.check_rounded),
                 label: Text(l10n.sessionFinish),
               )
@@ -153,7 +171,10 @@ class _ActiveSessionView extends StatelessWidget {
           child: switch (state) {
             ActiveSessionLoading() => const LoadingView(),
             ActiveSessionFailure(:final failure) => ErrorView(failure: failure),
-            ActiveSessionFinished() => const SizedBox.shrink(),
+            // Only reachable as an opening state — a day whose session was
+            // already gone when the screen opened. `buildWhen` keeps every
+            // other path from ever rendering it.
+            ActiveSessionFinished() => const LoadingView(),
             ActiveSessionData() => _BlockList(state: state),
           },
         ),
@@ -289,9 +310,11 @@ class _ExerciseRow extends StatelessWidget {
         setIndex: index,
         isUnilateral: exercise?.isUnilateral ?? false,
         weightStepKg: exercise?.loadType.defaultIncrementKg ?? 2.5,
+        isTimeBased: slot.isTimeBased,
         existing: existing,
         prefillWeightKg: prefill.weightKg,
         prefillReps: prefill.reps,
+        prefillDurationSec: slot.targetDurationSec,
       ),
     );
     if (result == null || !context.mounted) return;
@@ -306,6 +329,7 @@ class _ExerciseRow extends StatelessWidget {
       setIndex: index,
       weightKg: result.weightKg,
       reps: result.reps,
+      durationSec: result.durationSec,
       rpe: result.rpe,
       side: result.side,
     );
@@ -329,16 +353,6 @@ class _ExerciseRow extends StatelessWidget {
       setIndex: index,
       reason: reason,
     );
-    if (failure != null && context.mounted) {
-      context.showSnackBar(context.l10n.stateErrorBody, isError: true);
-    }
-  }
-
-  Future<void> _allAsPlanned(BuildContext context) async {
-    final cubit = context.read<ActiveSessionCubit>();
-    getIt<AppHaptics>().light();
-
-    final failure = await cubit.logAllAsPlanned(slot);
     if (failure != null && context.mounted) {
       context.showSnackBar(context.l10n.stateErrorBody, isError: true);
     }
@@ -375,17 +389,23 @@ class _ExerciseRow extends StatelessWidget {
                   Text(name, style: context.textStyles.titleSmall),
                   const SizedBox(height: 2),
                   Text(
-                    previous == null
-                        ? l10n.sessionNoPrevious
-                        : l10n.sessionPreviousSet(
-                            formatters.decimal(
-                              previous.weightKg ?? 0,
-                              fractionDigits: (previous.weightKg ?? 0) % 1 == 0
-                                  ? 0
-                                  : 1,
-                            ),
-                            previous.reps ?? 0,
-                          ),
+                    // A time-based exercise has no "60 × 8" to recall, so the
+                    // line reports last time's minutes instead of rendering
+                    // "0 × 0" against a treadmill.
+                    switch (previous) {
+                      null => l10n.sessionNoPrevious,
+                      SetLog(:final durationSec?, reps: null) =>
+                        l10n.sessionPreviousTime(
+                          l10n.slotDurationMinutes((durationSec / 60).round()),
+                        ),
+                      final set => l10n.sessionPreviousSet(
+                        formatters.decimal(
+                          set.weightKg ?? 0,
+                          fractionDigits: (set.weightKg ?? 0) % 1 == 0 ? 0 : 1,
+                        ),
+                        set.reps ?? 0,
+                      ),
+                    },
                     style: context.textStyles.bodySmall?.copyWith(
                       color: context.colors.onSurfaceVariant,
                     ),
@@ -429,11 +449,6 @@ class _ExerciseRow extends StatelessWidget {
                   onTap: () => _tap(context, index, sets[index]),
                   onLongPress: () => _edit(context, index, sets[index]),
                 ),
-              ),
-            if (active != null)
-              TextButton(
-                onPressed: () => _allAsPlanned(context),
-                child: Text(l10n.sessionAllAsPlanned),
               ),
           ],
         ),

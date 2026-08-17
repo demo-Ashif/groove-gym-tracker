@@ -23,24 +23,43 @@ class ScheduleDao extends DatabaseAccessor<AppDatabase>
         .watch();
   }
 
-  /// Days between two `YYYY-MM-DD` bounds, inclusive.
+  /// Days of the **active program** between two `YYYY-MM-DD` bounds,
+  /// inclusive.
   ///
   /// A string range is a real range here: the format sorts lexicographically
   /// in exactly calendar order, which is why the column is text and not a
   /// timestamp.
-  Stream<List<ScheduledSessionRow>> watchRange({
+  ///
+  /// The join to `programs` is the point of this query, not a detail. Programs
+  /// may overlap in dates — an old block and its replacement both cover
+  /// August — but only one is ever active (`setActiveProgram` deactivates the
+  /// rest). Without the filter, Today renders one row per program per date and
+  /// picks whichever sorted first when asked what today is.
+  Stream<List<ScheduledSessionRow>> watchActiveRange({
     required String fromDate,
     required String toDate,
   }) {
-    return (select(scheduledSessions)
+    final query =
+        select(scheduledSessions).join([
+            innerJoin(
+              programs,
+              programs.id.equalsExp(scheduledSessions.programId),
+            ),
+          ])
           ..where(
-            (row) =>
-                row.deletedAt.isNull() &
-                row.date.isBiggerOrEqualValue(fromDate) &
-                row.date.isSmallerOrEqualValue(toDate),
+            scheduledSessions.deletedAt.isNull() &
+                scheduledSessions.date.isBiggerOrEqualValue(fromDate) &
+                scheduledSessions.date.isSmallerOrEqualValue(toDate) &
+                programs.isActive.equals(true) &
+                programs.deletedAt.isNull(),
           )
-          ..orderBy([(row) => OrderingTerm(expression: row.date)]))
-        .watch();
+          ..orderBy([OrderingTerm(expression: scheduledSessions.date)]);
+
+    return query.watch().map(
+      (rows) => rows
+          .map((row) => row.readTable(scheduledSessions))
+          .toList(growable: false),
+    );
   }
 
   Future<ScheduledSessionRow?> findById(String id) {
@@ -95,7 +114,7 @@ class ScheduleDao extends DatabaseAccessor<AppDatabase>
             batch.insert(
               scheduledSessions,
               ScheduledSessionsCompanion.insert(
-                programId: programId,
+                programId: Value(programId),
                 sessionTemplateId: Value(day.sessionTemplateId),
                 date: day.date.toIso(),
                 weekNumber: day.weekNumber,
@@ -115,6 +134,20 @@ class ScheduleDao extends DatabaseAccessor<AppDatabase>
         ),
       );
     });
+  }
+
+  /// A single day belonging to no program, for backfilled training.
+  Future<ScheduledSessionRow> createBackfillDay({required String date}) {
+    return into(scheduledSessions).insertReturning(
+      ScheduledSessionsCompanion.insert(
+        date: date,
+        // Zero rather than 1: this day is in no program, so it is in no
+        // program week, and claiming week 1 would put it in some other
+        // block's charts.
+        weekNumber: 0,
+        kind: ScheduledSessionKind.gym,
+      ),
+    );
   }
 
   Future<void> setStatus(String id, ScheduledSessionStatus status) async {

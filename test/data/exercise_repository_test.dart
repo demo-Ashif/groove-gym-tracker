@@ -50,16 +50,128 @@ void main() {
     final result = await repository.createCustom(
       name: '   ',
       pattern: MovementPattern.squat,
+      bodySection: BodySection.legs,
       loadType: LoadType.barbell,
     );
 
     expect(result.failureOrNull, isA<ParseFailure>());
   });
 
+  group('names are unique among a user\'s own exercises', () {
+    Future<void> create(String name) async {
+      final result = await repository.createCustom(
+        name: name,
+        pattern: MovementPattern.squat,
+        bodySection: BodySection.legs,
+        loadType: LoadType.barbell,
+      );
+      expect(result.failureOrNull, isNull, reason: 'seeding $name');
+    }
+
+    test('a duplicate name is refused, ignoring case and padding', () async {
+      await create('Zercher squat');
+
+      for (final attempt in [
+        'Zercher squat',
+        'zercher SQUAT',
+        '  Zercher squat  ',
+      ]) {
+        final result = await repository.createCustom(
+          name: attempt,
+          pattern: MovementPattern.squat,
+          bodySection: BodySection.legs,
+          loadType: LoadType.barbell,
+        );
+        // Two rows with one name split a lift's history into two charts that
+        // each look like a plateau.
+        expect(result.failureOrNull, isA<ParseFailure>(), reason: attempt);
+      }
+    });
+
+    test('renaming keeps the id, so history follows the exercise', () async {
+      final created = (await repository.createCustom(
+        name: 'Zercher squat',
+        pattern: MovementPattern.squat,
+        bodySection: BodySection.legs,
+        loadType: LoadType.barbell,
+      )).dataOrNull!;
+
+      final result = await repository.renameCustom(
+        id: created.id,
+        name: 'Zercher front squat',
+        bodySection: BodySection.glutes,
+      );
+
+      expect(result.failureOrNull, isNull);
+
+      final after = (await repository.findById(created.id)).dataOrNull!;
+      expect(after.id, created.id, reason: 'set logs point at the id');
+      expect(after.customName, 'Zercher front squat');
+      expect(after.bodySection, BodySection.glutes);
+    });
+
+    test('a rename onto another exercise\'s name is refused', () async {
+      await create('Zercher squat');
+      final second = (await repository.createCustom(
+        name: 'Anderson squat',
+        pattern: MovementPattern.squat,
+        bodySection: BodySection.legs,
+        loadType: LoadType.barbell,
+      )).dataOrNull!;
+
+      final result = await repository.renameCustom(
+        id: second.id,
+        name: 'Zercher squat',
+      );
+
+      expect(result.failureOrNull, isA<ParseFailure>());
+    });
+
+    test('renaming an exercise to its own name is allowed', () async {
+      final created = (await repository.createCustom(
+        name: 'Zercher squat',
+        pattern: MovementPattern.squat,
+        bodySection: BodySection.legs,
+        loadType: LoadType.barbell,
+      )).dataOrNull!;
+
+      // Re-filing without touching the name must not collide with itself.
+      final result = await repository.renameCustom(
+        id: created.id,
+        name: 'Zercher squat',
+        bodySection: BodySection.core,
+      );
+
+      expect(result.failureOrNull, isNull);
+      expect(
+        (await repository.findById(created.id)).dataOrNull!.bodySection,
+        BodySection.core,
+      );
+    });
+
+    test('a seeded exercise cannot be renamed', () async {
+      final result = await repository.renameCustom(
+        id: systemExerciseId('exBackSquat'),
+        name: 'My squat',
+      );
+
+      // Its name is an ARB key every locale resolves; renaming it here would
+      // relabel the movement across everyone's history.
+      expect(result.failureOrNull, isA<ParseFailure>());
+      expect(
+        (await repository.findById(
+          systemExerciseId('exBackSquat'),
+        )).dataOrNull!.nameKey,
+        'exBackSquat',
+      );
+    });
+  });
+
   test('a created exercise comes back as an entity', () async {
     final result = await repository.createCustom(
       name: 'Zercher squat',
       pattern: MovementPattern.squat,
+      bodySection: BodySection.legs,
       loadType: LoadType.barbell,
       primaryMuscles: const ['quads'],
     );

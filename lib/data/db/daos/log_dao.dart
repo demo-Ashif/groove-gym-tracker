@@ -10,38 +10,94 @@ part 'log_dao.g.dart';
 /// A session and its sets, before the mapper joins them up.
 typedef SessionLogRows = ({SessionLogRow log, List<SetLogRow> sets});
 
+/// A finished session with the day it was logged against, for the history
+/// list. The title comes from the template so a row reads "Push + Core"
+/// rather than a bare date.
+typedef SessionHistoryRows = ({
+  SessionLogRow log,
+  List<SetLogRow> sets,
+  String? title,
+});
+
 /// Reads and writes what actually happened.
 ///
 /// **Every write here is a write to disk, immediately.** The active session is
 /// persisted on each set, not on finish (ADR §9.4), because the phone will be
 /// backgrounded, the screen will lock, and the OS will eventually kill the
 /// process mid-workout. Nothing may be held in memory waiting for a "save".
-@DriftAccessor(tables: [SessionLogs, SetLogs, ScheduledSessions])
+@DriftAccessor(
+  tables: [SessionLogs, SetLogs, ScheduledSessions, SessionTemplates],
+)
 class LogDao extends DatabaseAccessor<AppDatabase> with _$LogDaoMixin {
   LogDao(super.attachedDatabase);
 
   /// The session in progress, if any. This is how a cold start finds a workout
-  /// to resume.
+  /// to resume, and what the logging screen renders from.
+  ///
+  /// **The join is load-bearing, not an optimisation.** A drift stream only
+  /// re-runs when one of the tables *it reads* is written. Selecting from
+  /// `session_logs` and fetching the sets separately makes the stream blind to
+  /// `set_logs`, so logging a set — which touches nothing else — never
+  /// refreshes it and the screen shows a workout frozen at its first frame.
   Stream<SessionLogRows?> watchActiveSession() {
-    return (select(sessionLogs)
-          ..where((row) => row.endedAt.isNull() & row.deletedAt.isNull())
-          ..orderBy([(row) => OrderingTerm.desc(row.startedAt)])
-          ..limit(1))
-        .watchSingleOrNull()
-        .asyncMap((log) async {
-          if (log == null) return null;
-          return (log: log, sets: await _setsFor(log.id));
-        });
+    final query =
+        select(sessionLogs).join([
+            leftOuterJoin(
+              setLogs,
+              setLogs.sessionLogId.equalsExp(sessionLogs.id) &
+                  setLogs.deletedAt.isNull(),
+            ),
+          ])
+          ..where(sessionLogs.endedAt.isNull() & sessionLogs.deletedAt.isNull())
+          // Newest session first, so the fold below can stop at the moment the
+          // id changes. `limit` cannot be used here: it would cap *joined*
+          // rows, which would silently drop every set after the first.
+          ..orderBy([
+            OrderingTerm.desc(sessionLogs.startedAt),
+            OrderingTerm.asc(setLogs.setIndex),
+          ]);
+
+    return query.watch().map(_firstSession);
   }
 
+  /// One session and its sets, live. Same join, same reason — a set written
+  /// while the screen is open has to reach it.
   Stream<SessionLogRows?> watchSession(String id) {
-    return (select(sessionLogs)
-          ..where((row) => row.id.equals(id) & row.deletedAt.isNull()))
-        .watchSingleOrNull()
-        .asyncMap((log) async {
-          if (log == null) return null;
-          return (log: log, sets: await _setsFor(log.id));
-        });
+    final query =
+        select(sessionLogs).join([
+            leftOuterJoin(
+              setLogs,
+              setLogs.sessionLogId.equalsExp(sessionLogs.id) &
+                  setLogs.deletedAt.isNull(),
+            ),
+          ])
+          ..where(sessionLogs.id.equals(id) & sessionLogs.deletedAt.isNull())
+          ..orderBy([OrderingTerm.asc(setLogs.setIndex)]);
+
+    return query.watch().map(_firstSession);
+  }
+
+  /// Folds joined rows into the first session and the sets belonging to it.
+  ///
+  /// A left join repeats the session once per set, and emits a single row with
+  /// a null set when there are none yet — which is exactly the state a session
+  /// opens in.
+  SessionLogRows? _firstSession(List<TypedResult> rows) {
+    if (rows.isEmpty) return null;
+
+    final log = rows.first.readTable(sessionLogs);
+    final sets = <SetLogRow>[];
+
+    for (final row in rows) {
+      // Rows are ordered so one session's are contiguous; anything past them
+      // belongs to an older session that this query is not reporting on.
+      if (row.readTable(sessionLogs).id != log.id) break;
+
+      final set = row.readTableOrNull(setLogs);
+      if (set != null) sets.add(set);
+    }
+
+    return (log: log, sets: sets);
   }
 
   Future<SessionLogRows?> loadSession(String id) async {
@@ -68,6 +124,51 @@ class LogDao extends DatabaseAccessor<AppDatabase> with _$LogDaoMixin {
             .getSingleOrNull();
     if (log == null) return null;
     return (log: log, sets: await _setsFor(log.id));
+  }
+
+  /// Every finished session, newest first, with the day and template behind
+  /// it.
+  ///
+  /// In-progress sessions are excluded: one is already surfaced by
+  /// [watchActiveSession] as something to resume, and a history list is a list
+  /// of things that happened.
+  ///
+  /// The template join is a **left** join on purpose. A session logged against
+  /// a cricket day has no template, and a program deleted since then leaves
+  /// the row pointing at nothing — neither is a reason to drop a workout the
+  /// user actually did out of their own history.
+  Stream<List<SessionHistoryRows>> watchFinishedSessions({int limit = 200}) {
+    final query =
+        select(sessionLogs).join([
+            leftOuterJoin(
+              scheduledSessions,
+              scheduledSessions.id.equalsExp(sessionLogs.scheduledSessionId),
+            ),
+            leftOuterJoin(
+              sessionTemplates,
+              sessionTemplates.id.equalsExp(
+                scheduledSessions.sessionTemplateId,
+              ),
+            ),
+          ])
+          ..where(
+            sessionLogs.endedAt.isNotNull() & sessionLogs.deletedAt.isNull(),
+          )
+          ..orderBy([OrderingTerm.desc(sessionLogs.startedAt)])
+          ..limit(limit);
+
+    return query.watch().asyncMap((rows) async {
+      final result = <SessionHistoryRows>[];
+      for (final row in rows) {
+        final log = row.readTable(sessionLogs);
+        result.add((
+          log: log,
+          sets: await _setsFor(log.id),
+          title: row.readTableOrNull(sessionTemplates)?.title,
+        ));
+      }
+      return result;
+    });
   }
 
   Future<List<SetLogRow>> _setsFor(String sessionLogId) {

@@ -208,14 +208,15 @@ class PlanRepositoryImpl implements PlanRepository {
     required String blockTemplateId,
     required String exerciseId,
     required int targetSets,
-    int? targetRepsMin,
-    int? targetRepsMax,
+    int? targetReps,
+    int? targetDurationSec,
+    double? targetLoadKg,
     int restSeconds = 90,
     bool perSide = false,
     ProgressionRule progression = const ProgressionRule.fixed(),
   }) => Result.guard(() async {
     _requireSets(targetSets);
-    _requireRepRange(targetRepsMin, targetRepsMax);
+    _requirePrescription(targetReps, targetDurationSec);
 
     final row = await _dao.createExercise(
       ExerciseTemplatesCompanion.insert(
@@ -224,8 +225,9 @@ class PlanRepositoryImpl implements PlanRepository {
         // Overwritten by the DAO, which appends to the end of the block.
         orderIndex: 0,
         targetSets: targetSets,
-        targetRepsMin: Value(targetRepsMin),
-        targetRepsMax: Value(targetRepsMax),
+        targetReps: Value(targetReps),
+        targetDurationSec: Value(targetDurationSec),
+        targetLoadKg: Value(targetLoadKg),
         restSeconds: Value(restSeconds),
         perSide: Value(perSide),
         progressionRule: Value(ProgressionRuleCodec.encode(progression)),
@@ -238,14 +240,14 @@ class PlanRepositoryImpl implements PlanRepository {
   Future<Result<void>> updateExercise(ExerciseTemplate exercise) =>
       Result.guard(() async {
         _requireSets(exercise.targetSets);
-        _requireRepRange(exercise.targetRepsMin, exercise.targetRepsMax);
+        _requirePrescription(exercise.targetReps, exercise.targetDurationSec);
 
         await _dao.updateExercise(
           ExerciseTemplatesCompanion(
             exerciseId: Value(exercise.exerciseId),
             targetSets: Value(exercise.targetSets),
-            targetRepsMin: Value(exercise.targetRepsMin),
-            targetRepsMax: Value(exercise.targetRepsMax),
+            targetReps: Value(exercise.targetReps),
+            targetDurationSec: Value(exercise.targetDurationSec),
             targetLoadKg: Value(exercise.targetLoadKg),
             targetLoadText: Value(exercise.targetLoadText),
             targetRpe: Value(exercise.targetRpe),
@@ -306,12 +308,21 @@ class PlanRepositoryImpl implements PlanRepository {
     }
   }
 
-  static void _requireRepRange(int? min, int? max) {
-    if (min != null && min < 1) {
+  /// A slot is measured by reps or by the clock, never both — two
+  /// prescriptions on one slot means the logger has no single field to write
+  /// and adherence has two denominators. Neither is allowed: a slot may be
+  /// saved with only sets while the rest is still being filled in.
+  static void _requirePrescription(int? reps, int? durationSec) {
+    if (reps != null && durationSec != null) {
+      throw const ParseException(
+        'A slot is prescribed in reps or in time, not both',
+      );
+    }
+    if (reps != null && reps < 1) {
       throw const ParseException('Rep targets start at 1');
     }
-    if (min != null && max != null && max < min) {
-      throw const ParseException('Rep range is inverted');
+    if (durationSec != null && durationSec < 1) {
+      throw const ParseException('Time targets start at 1 second');
     }
   }
 

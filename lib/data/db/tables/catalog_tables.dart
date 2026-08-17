@@ -34,6 +34,11 @@ class Exercises extends Table with SyncedRow {
 
   TextColumn get pattern => textEnum<MovementPattern>()();
 
+  /// How the picker groups this row — chest, legs, core. Stored rather than
+  /// derived on read so a user can re-file their own exercise without the
+  /// derivation overruling them next time.
+  TextColumn get bodySection => textEnum<BodySection>()();
+
   TextColumn get loadType => textEnum<LoadType>()();
 
   /// Worked one side at a time. Drives whether the logger offers left/right

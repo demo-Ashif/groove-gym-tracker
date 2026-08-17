@@ -28,8 +28,9 @@ class SetChip extends StatelessWidget {
   /// Null when the set hasn't been logged yet.
   final SetLog? set;
 
-  /// The next set due — outlined in the accent so the eye lands on it without
-  /// reading anything.
+  /// The next set due. Every unlogged chip is tappable and outlined; this one
+  /// additionally carries the accent, so the eye lands on where to go next
+  /// without that implying the others are closed.
   final bool isActive;
 
   final VoidCallback onTap;
@@ -43,10 +44,13 @@ class SetChip extends StatelessWidget {
     final logged = set;
 
     final (background, foreground, border) = switch (logged?.status) {
+      // Unlogged. Every one of these is tappable — you can log set 3 before
+      // set 2 — so they all carry an outline. Only the next-due one gets the
+      // accent, as a hint rather than a gate.
       null => (
         colors.surfaceContainerHigh,
-        colors.onSurfaceVariant,
-        isActive ? colors.primary : Colors.transparent,
+        isActive ? colors.onSurface : colors.onSurfaceVariant,
+        isActive ? colors.primary : colors.outlineVariant,
       ),
       SetStatus.done => (colors.primary, colors.onPrimary, Colors.transparent),
       SetStatus.partial => (
@@ -87,7 +91,9 @@ class SetChip extends StatelessWidget {
               decoration: BoxDecoration(
                 color: background,
                 borderRadius: AppRadius.smAll,
-                border: Border.all(color: border, width: 2),
+                // The next-due chip's outline is heavier, so "available" and
+                // "do this one next" read as two different things at a glance.
+                border: Border.all(color: border, width: isActive ? 2 : 1),
               ),
               child: AnimatedSwitcher(
                 duration: AppDurations.micro,
@@ -128,6 +134,20 @@ class SetChip extends StatelessWidget {
     final weight = logged.weightKg;
     final reps = logged.reps;
 
+    // Time-based work has no load or reps to show — a bike interval reads as
+    // "10 min", which is the whole record of what was done.
+    if (logged.durationSec case final seconds? when reps == null) {
+      return Text(
+        context.l10n.slotDurationMinutes((seconds / 60).round()),
+        key: ValueKey('duration-$setIndex-$seconds'),
+        style: context.textStyles.labelLarge?.copyWith(
+          color: foreground,
+          fontWeight: FontWeight.w700,
+        ),
+        maxLines: 1,
+      );
+    }
+
     return Text(
       weight == null || reps == null
           ? formatters.integer(reps ?? 0)
@@ -151,6 +171,10 @@ class SetChip extends StatelessWidget {
 
     final weight = logged.weightKg;
     final reps = logged.reps;
+
+    if (logged.durationSec case final seconds? when reps == null) {
+      return l10n.slotDurationMinutes((seconds / 60).round());
+    }
     if (weight == null || reps == null) {
       return l10n.sessionSetChip(setIndex + 1);
     }

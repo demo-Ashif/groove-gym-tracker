@@ -11,8 +11,8 @@ import '../values/calendar_date.dart';
 class ScheduledSession extends Equatable {
   const ScheduledSession({
     required this.id,
-    required this.programId,
     required this.date,
+    this.programId,
     required this.weekNumber,
     required this.kind,
     this.sessionTemplateId,
@@ -22,7 +22,10 @@ class ScheduledSession extends Equatable {
   });
 
   final String id;
-  final String programId;
+
+  /// Null for a backfilled day that belongs to no program.
+  final String? programId;
+
   final CalendarDate date;
 
   /// 1-based week of the program.

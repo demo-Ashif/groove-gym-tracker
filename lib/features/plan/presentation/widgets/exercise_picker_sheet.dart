@@ -9,15 +9,21 @@ import '../../../../domain/enums/training_enums.dart';
 import '../../../../domain/repositories/exercise_repository.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../shared/l10n/exercise_name.dart';
+import '../../../../shared/widgets/app_sheet.dart';
 import '../../../../shared/widgets/state_views.dart';
+import 'exercise_form_sheet.dart';
 import 'plan_labels.dart';
 
-/// Picks an exercise from the catalog, grouped by movement pattern.
+/// Picks an exercise from the catalog, grouped by body section.
 ///
 /// **Filtering happens in Dart, not SQL.** A seeded exercise's name is an ARB
 /// key, so only the presentation layer can resolve it for the active locale —
 /// a `LIKE` in the database would match nothing a user actually typed. The
 /// catalog is ~120 rows held in memory, so this is a trivial scan.
+///
+/// Grouping is by [BodySection] rather than [MovementPattern]: someone hunting
+/// for an incline press looks under Chest, not under Push. The pattern is
+/// still stored, and still what Insights balances volume across.
 class ExercisePickerSheet extends StatefulWidget {
   const ExercisePickerSheet({super.key});
 
@@ -47,24 +53,135 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
 
   void _onQueryChanged() => setState(() => _query = _search.text.trim());
 
-  Future<void> _createAndPick(String name) async {
-    final result = await _repository.createCustom(
-      name: name,
-      // A user-created exercise has to be filed somewhere; "main" work with a
-      // barbell is the least surprising default, and both are editable later.
-      pattern: MovementPattern.push,
-      loadType: LoadType.barbell,
-    );
+  /// Names already taken, resolved for the active locale.
+  ///
+  /// System names live in ARB and custom names live in SQLite, so neither the
+  /// database nor the repository can see both. This is the only layer that
+  /// can, which is why the duplicate check for *seeded* names happens here.
+  Set<String> _takenNames(
+    List<Exercise> catalog,
+    L10n l10n, {
+    String? excludingId,
+  }) {
+    return {
+      for (final exercise in catalog)
+        if (exercise.id != excludingId)
+          exerciseDisplayName(
+            l10n: l10n,
+            nameKey: exercise.nameKey,
+            customName: exercise.customName,
+          ).trim().toLowerCase(),
+    };
+  }
 
-    if (!mounted) return;
+  Future<void> _create(List<Exercise> catalog, {String? seedName}) async {
+    final l10n = context.l10n;
+    String? error;
+    var name = seedName;
+    var section = BodySection.fullBody;
 
-    switch (result.dataOrNull) {
-      case final exercise?:
-        Navigator.of(context).pop(exercise);
-      case null:
-        context.showSnackBar(context.l10n.stateErrorBody, isError: true);
+    // Loops so a rejected name reopens the sheet with the reason attached,
+    // instead of closing and losing what was typed.
+    while (true) {
+      final result = await AppSheet.show<ExerciseFormResult>(
+        context,
+        builder: (_) => ExerciseFormSheet(
+          title: l10n.pickerCreateTitle,
+          initialName: name,
+          initialSection: section,
+          errorText: error,
+        ),
+      );
+      if (result == null || !mounted) return;
+
+      name = result.name;
+      section = result.bodySection;
+
+      if (_takenNames(catalog, l10n).contains(name.trim().toLowerCase())) {
+        error = l10n.pickerDuplicateName;
+        continue;
+      }
+
+      final created = await _repository.createCustom(
+        name: name,
+        // A user-created exercise has to carry a pattern for the volume
+        // charts; the section they chose is the better signal than a fixed
+        // default, and both stay editable.
+        pattern: _patternFor(section),
+        bodySection: section,
+        loadType: LoadType.barbell,
+      );
+      if (!mounted) return;
+
+      switch (created.dataOrNull) {
+        case final exercise?:
+          Navigator.of(context).pop(exercise);
+          return;
+        case null:
+          error = created.failureOrNull is ParseFailure
+              ? l10n.pickerDuplicateName
+              : l10n.stateErrorBody;
+      }
     }
   }
+
+  Future<void> _rename(Exercise exercise, List<Exercise> catalog) async {
+    final l10n = context.l10n;
+    String? error;
+    var name = exercise.customName;
+    var section = exercise.bodySection;
+
+    while (true) {
+      final result = await AppSheet.show<ExerciseFormResult>(
+        context,
+        builder: (_) => ExerciseFormSheet(
+          title: l10n.pickerRenameTitle,
+          initialName: name,
+          initialSection: section,
+          errorText: error,
+        ),
+      );
+      if (result == null || !mounted) return;
+
+      name = result.name;
+      section = result.bodySection;
+
+      if (_takenNames(
+        catalog,
+        l10n,
+        excludingId: exercise.id,
+      ).contains(name.trim().toLowerCase())) {
+        error = l10n.pickerDuplicateName;
+        continue;
+      }
+
+      final renamed = await _repository.renameCustom(
+        id: exercise.id,
+        name: name,
+        bodySection: section,
+      );
+      if (!mounted) return;
+
+      if (renamed.failureOrNull == null) return;
+      error = renamed.failureOrNull is ParseFailure
+          ? l10n.pickerDuplicateName
+          : l10n.stateErrorBody;
+    }
+  }
+
+  /// The volume-balance axis for a user-created exercise, inferred from the
+  /// section they filed it under. A rough guess beats asking for a second
+  /// taxonomy at creation time; it is editable later.
+  MovementPattern _patternFor(BodySection section) => switch (section) {
+    BodySection.chest || BodySection.shoulders => MovementPattern.push,
+    BodySection.upperBack || BodySection.arms => MovementPattern.pull,
+    BodySection.lowerBack || BodySection.glutes => MovementPattern.hinge,
+    BodySection.legs => MovementPattern.squat,
+    BodySection.core => MovementPattern.core,
+    BodySection.cardio => MovementPattern.conditioning,
+    BodySection.mobility => MovementPattern.mobility,
+    BodySection.fullBody => MovementPattern.carry,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -142,18 +259,37 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
                           : l10n.pickerCreateNamed(_query),
                       onAction: _query.isEmpty
                           ? null
-                          : () => _createAndPick(_query),
+                          : () => _create(exercises, seedName: _query),
                     );
                   }
 
                   return ListView.builder(
                     controller: scrollController,
                     padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
-                    itemCount: grouped.length,
-                    itemBuilder: (context, index) => grouped[index].build(
-                      context,
-                      onPick: (exercise) => Navigator.of(context).pop(exercise),
-                    ),
+                    // One extra row for "add your own", which stays reachable
+                    // when a search *does* match — "Bench press" existing is
+                    // no reason you can't add "Bench press (Smith)".
+                    itemCount: grouped.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == grouped.length) {
+                        return _CreateRow(
+                          label: _query.isEmpty
+                              ? l10n.pickerCreateTitle
+                              : l10n.pickerCreateNamed(_query),
+                          onTap: () => _create(
+                            exercises,
+                            seedName: _query.isEmpty ? null : _query,
+                          ),
+                        );
+                      }
+
+                      return grouped[index].build(
+                        context,
+                        onPick: (exercise) =>
+                            Navigator.of(context).pop(exercise),
+                        onRename: (exercise) => _rename(exercise, exercises),
+                      );
+                    },
                   );
                 },
               ),
@@ -164,8 +300,8 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     );
   }
 
-  /// Filtered, then grouped by pattern, then flattened into rows so the list
-  /// can be built lazily rather than as one giant Column.
+  /// Filtered, then grouped by body section, then flattened into rows so the
+  /// list can be built lazily rather than as one giant Column.
   List<_PickerRow> _group(List<Exercise> exercises, L10n l10n) {
     final matches = exercises.where((exercise) {
       if (_query.isEmpty) return true;
@@ -182,14 +318,14 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
     }).toList();
 
     final rows = <_PickerRow>[];
-    for (final pattern in MovementPattern.values) {
-      final inPattern = matches
-          .where((exercise) => exercise.pattern == pattern)
+    for (final section in BodySection.values) {
+      final inSection = matches
+          .where((exercise) => exercise.bodySection == section)
           .toList();
-      if (inPattern.isEmpty) continue;
+      if (inSection.isEmpty) continue;
 
-      rows.add(_PickerHeader(pattern));
-      rows.addAll(inPattern.map(_PickerExercise.new));
+      rows.add(_PickerHeader(section));
+      rows.addAll(inSection.map(_PickerExercise.new));
     }
     return rows;
   }
@@ -198,16 +334,24 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet> {
 sealed class _PickerRow {
   const _PickerRow();
 
-  Widget build(BuildContext context, {required ValueChanged<Exercise> onPick});
+  Widget build(
+    BuildContext context, {
+    required ValueChanged<Exercise> onPick,
+    required ValueChanged<Exercise> onRename,
+  });
 }
 
 class _PickerHeader extends _PickerRow {
-  const _PickerHeader(this.pattern);
+  const _PickerHeader(this.section);
 
-  final MovementPattern pattern;
+  final BodySection section;
 
   @override
-  Widget build(BuildContext context, {required ValueChanged<Exercise> onPick}) {
+  Widget build(
+    BuildContext context, {
+    required ValueChanged<Exercise> onPick,
+    required ValueChanged<Exercise> onRename,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.gutter,
@@ -216,7 +360,7 @@ class _PickerHeader extends _PickerRow {
         AppSpacing.xxs,
       ),
       child: Text(
-        pattern.label(context.l10n).toUpperCase(),
+        section.label(context.l10n).toUpperCase(),
         style: context.textStyles.labelSmall?.copyWith(
           color: context.colors.onSurfaceVariant,
           letterSpacing: 1.2,
@@ -233,7 +377,11 @@ class _PickerExercise extends _PickerRow {
   final Exercise exercise;
 
   @override
-  Widget build(BuildContext context, {required ValueChanged<Exercise> onPick}) {
+  Widget build(
+    BuildContext context, {
+    required ValueChanged<Exercise> onPick,
+    required ValueChanged<Exercise> onRename,
+  }) {
     final name = exerciseDisplayName(
       l10n: context.l10n,
       nameKey: exercise.nameKey,
@@ -242,16 +390,45 @@ class _PickerExercise extends _PickerRow {
 
     return ListTile(
       title: Text(name),
-      // A custom exercise is worth marking: it is the user's own row, and the
-      // only kind they can edit.
-      trailing: exercise.isSystem
-          ? null
-          : Icon(
-              Icons.person_outline_rounded,
-              size: 18,
-              color: context.colors.onSurfaceVariant,
-            ),
+      // Only a user's own row can be renamed: a seeded name is an ARB key
+      // that every locale resolves, and renaming it here would relabel the
+      // same movement across everyone's history (ADR §12.4).
+      trailing: exercise.isEditable
+          ? IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: context.l10n.pickerRenameTitle,
+              onPressed: () => onRename(exercise),
+            )
+          : null,
       onTap: () => onPick(exercise),
+    );
+  }
+}
+
+class _CreateRow extends StatelessWidget {
+  const _CreateRow({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      child: ListTile(
+        leading: Icon(
+          Icons.add_circle_outline_rounded,
+          color: context.colors.primary,
+        ),
+        title: Text(
+          label,
+          style: context.textStyles.bodyLarge?.copyWith(
+            color: context.colors.primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        onTap: onTap,
+      ),
     );
   }
 }

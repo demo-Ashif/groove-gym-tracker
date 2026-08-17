@@ -21,6 +21,14 @@ class LogRepositoryImpl implements LogRepository {
       _dao.watchSession(id).map((rows) => rows?.toEntity());
 
   @override
+  Stream<List<SessionHistoryEntry>> watchFinishedSessions({int limit = 200}) =>
+      _dao
+          .watchFinishedSessions(limit: limit)
+          .map(
+            (rows) => rows.map((row) => row.toEntity()).toList(growable: false),
+          );
+
+  @override
   Future<Result<SessionLog?>> latestForScheduled(String scheduledSessionId) =>
       Result.guard(
         () async =>
@@ -30,11 +38,12 @@ class LogRepositoryImpl implements LogRepository {
   @override
   Future<Result<SessionLog>> startSession({
     required String scheduledSessionId,
+    DateTime? startedAt,
     double? bodyweightKg,
   }) => Result.guard(() async {
     final row = await _dao.startSession(
       scheduledSessionId: scheduledSessionId,
-      startedAt: DateTime.now(),
+      startedAt: startedAt ?? DateTime.now(),
       bodyweightKg: bodyweightKg,
     );
 

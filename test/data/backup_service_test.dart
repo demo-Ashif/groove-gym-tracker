@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:groove/core/error/app_exception.dart';
 import 'package:groove/data/backup/backup_service.dart';
 import 'package:groove/data/db/app_database.dart';
+import 'package:groove/data/db/seed/exercise_seed.dart';
 import 'package:groove/data/repositories/log_repository_impl.dart';
 import 'package:groove/data/repositories/plan_repository_impl.dart';
 import 'package:groove/data/repositories/schedule_repository_impl.dart';
@@ -69,8 +70,7 @@ void main() {
       blockTemplateId: block.id,
       exerciseId: squat,
       targetSets: 4,
-      targetRepsMin: 8,
-      targetRepsMax: 8,
+      targetReps: 8,
     );
     await schedule.commitSchedule(
       programId: program.id,
@@ -111,7 +111,10 @@ void main() {
 
       final tables = json['tables']! as Map<String, Object?>;
       // The catalog, the plan and the log all travel.
-      expect((tables['exercises']! as List), hasLength(122));
+      expect(
+        (tables['exercises']! as List),
+        hasLength(exerciseCatalogSeed.length),
+      );
       expect((tables['programs']! as List), hasLength(1));
       expect((tables['set_logs']! as List), hasLength(1));
     });
@@ -138,7 +141,7 @@ void main() {
       addTearDown(fresh.close);
       final restored = await BackupService(fresh).restore(json);
 
-      expect(restored, greaterThan(122));
+      expect(restored, greaterThan(exerciseCatalogSeed.length));
 
       final after = await fresh.select(fresh.setLogs).get();
       expect(after, hasLength(before.length));
@@ -219,7 +222,7 @@ void main() {
       expect(preview.schemaVersion, db.schemaVersion);
       expect(preview.exportedAt, isNotNull);
       expect(preview.rowCounts['programs'], 1);
-      expect(preview.totalRows, greaterThan(122));
+      expect(preview.totalRows, greaterThan(exerciseCatalogSeed.length));
 
       // Nothing was written.
       expect(await other.select(other.programs).get(), isEmpty);

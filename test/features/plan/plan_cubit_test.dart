@@ -236,8 +236,7 @@ void main() {
             blockTemplateId: block.id,
             exerciseId: systemExerciseId('exBackSquat'),
             targetSets: 4,
-            targetRepsMin: 8,
-            targetRepsMax: 8,
+            targetReps: 8,
           ),
           isNull,
         );
