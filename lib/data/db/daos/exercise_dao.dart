@@ -44,7 +44,8 @@ class ExerciseDao extends DatabaseAccessor<AppDatabase>
     )..where((row) => row.id.equals(id))).getSingleOrNull();
   }
 
-  /// Alias and literal-name lookup for the plan parser's matcher (ADR §7.3).
+  /// Alias and literal-name lookup. No caller today — plan ingestion is
+  /// deferred (ADR §7) — but it is the query a catalog search would use.
   ///
   /// Deliberately does *not* search `nameKey`: that is an ARB key, not text a
   /// user ever types. Matching display names is the presentation layer's job,

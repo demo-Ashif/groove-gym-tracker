@@ -18,7 +18,7 @@
 4. [Domain Model](#4-domain-model)
 5. [Backend Architecture (Supabase)](#5-backend-architecture-supabase)
 6. [Sync Engine](#6-sync-engine)
-7. [Plan Ingestion (Voice / Text / Paste)](#7-plan-ingestion-voice--text--paste)
+7. [Plan Ingestion (deferred)](#7-plan-ingestion-deferred)
 8. [Scheduling & Cycles](#8-scheduling--cycles)
 9. [The Logging Loop (tap-first, type-last)](#9-the-logging-loop-tap-first-type-last)
 10. [Check-ins & Reassessment](#10-check-ins--reassessment)
@@ -70,7 +70,7 @@ Both Android and iOS accept `aether.lab.groove` too — it's syntactically legal
 
 ### 1.3 Elevator pitch
 
-Groove turns a coach-written training plan — pasted, dictated or typed — into a day-by-day checklist you tap through at the gym. It records what you actually did against what was prescribed, and rolls it into adherence, strength and body-composition trends filterable by day, week, month or training cycle.
+Groove turns a coach-written training plan — entered in the program builder — into a day-by-day checklist you tap through at the gym. It records what you actually did against what was prescribed, and rolls it into adherence, strength and body-composition trends filterable by day, week, month or training cycle.
 
 ---
 
@@ -87,7 +87,7 @@ Groove turns a coach-written training plan — pasted, dictated or typed — int
 
 ### 2.2 Out of scope for v1
 
-Social features, exercise video library, AI form checking, multi-user/teams, subscriptions, marketing onboarding carousel, Apple Watch app. (Locales beyond English are *out of scope but not out of architecture* — see §12.)
+Social features, exercise video library, AI form checking, multi-user/teams, subscriptions, marketing onboarding carousel, Apple Watch app, **voice capture of any kind, and automated plan parsing** (see §7). (Locales beyond English are *out of scope but not out of architecture* — see §12.)
 
 ---
 
@@ -105,8 +105,6 @@ Social features, exercise video library, AI form checking, multi-user/teams, sub
 | Modelling | `freezed` for state/unions; `json_serializable` **data layer only**; pure domain entities | `dart run build_runner build --delete-conflicting-outputs`. |
 | Localization | `flutter_localizations` + `gen_l10n` + ARB | §12. |
 | Charts | `fl_chart` | Theme-able to tokens; custom painters where needed. |
-| Voice | `speech_to_text` (on-device) | Capture only; interpretation is separate. |
-| Plan parsing | Heuristic markdown parser + optional Anthropic Messages API | §7. |
 | Secrets | `flutter_secure_storage` | API keys, Supabase session. Never in `SharedPreferences`, never in source. |
 | Prefs | `shared_preferences` | Theme mode, locale override, last tab. Non-sensitive only. |
 | Notifications | `flutter_local_notifications` + `timezone` | Session reminder, check-in due, rest timer. |
@@ -250,7 +248,6 @@ Plus, on every table: index on `(owner_id, updated_at)` for the pull cursor, ind
 |---|---|---|
 | Row storage | Postgres | |
 | Progress photos | Supabase Storage, **private bucket**, path `{owner_id}/{check_in_id}/{front\|side}.jpg` | Signed URLs only, ~60s TTL. Never a public bucket. |
-| Plan parsing via Anthropic | **Edge Function** (`parse-plan`) | Keeps the Anthropic key server-side instead of in an extractable client binary. This is the main reason to have a backend at all beyond storage. |
 | Aggregation | **Client-side (Drift)** | Insights must work offline. Do not move aggregation to Postgres views — you'd break principle 3. |
 | Migrations | Supabase CLI, versioned SQL in `supabase/migrations/`, committed to the repo | Never click-edit schema in the dashboard; local and remote schemas must move together. |
 
@@ -291,69 +288,22 @@ A single unobtrusive status in Settings and a hairline indicator on the Today ap
 
 ---
 
-## 7. Plan Ingestion (Voice / Text / Paste)
+## 7. Plan Ingestion (deferred)
 
-Three entry points, one pipeline, one review gate.
+**Not in scope, and no code for it exists.** Voice capture, markdown paste,
+dictation, the `ParsePlanService` pipeline and the `parse-plan` Edge Function
+are all deferred. Programs are created in the manual builder (§19 Phase 1,
+step 3), which is shipped and is the only supported path.
 
-```
-[ Paste markdown ]                          ┌──────────────────┐
-[ Dictate (speech_to_text) ] ──> raw text ──>│ ParsePlanService │──> ParsedPlan (JSON)
-[ Type in-app ]                             └──────────────────┘        │
-                                                                        ▼
-                                                   ┌────────────────────────────────┐
-                                                   │ Review & Fix (editable)        │
-                                                   │ confidence flags, exercise      │
-                                                   │ matching, unresolved items      │
-                                                   └────────────────────────────────┘
-                                                                        │ commit
-                                                                        ▼
-                                                     Program + Phases + Templates + Schedule
-```
+Two pieces of groundwork stay, because both are cheap to carry and awkward to
+retrofit into a table that already has rows:
 
-### 7.1 Two parsers behind one interface
+- `exercises.aliases` — alternate spellings, seeded but unread.
+- `ExerciseRepository.findByText` — literal name and alias lookup.
 
-- **`HeuristicPlanParser`** (default) — regex over markdown tables (`| # | Exercise | Sets × Reps | Rest | Notes |`), headings for phases and days, `N × M` set-rep patterns. Deterministic, offline, free, and it handles the exact format your plans arrive in. **Build this one first.**
-- **`LlmPlanParser`** — calls the `parse-plan` Edge Function (§5.3), which holds the Anthropic key and enforces the JSON schema. System prompt: *"Return ONLY valid JSON matching this schema. No prose, no fences."* Strip stray fences defensively before decode; on failure retry once with the error appended, then fall back to heuristic.
-
-### 7.2 Target schema (abridged)
-
-```json
-{
-  "program": { "name": "string", "startDate": "YYYY-MM-DD", "weeks": 10 },
-  "phases": [{
-    "name": "Cycle 1 — Foundation",
-    "startWeek": 2, "endWeek": 4,
-    "targetSessionMinutes": 90, "rpeLow": 6.0, "rpeHigh": 7.5,
-    "sessions": [{
-      "code": "A", "title": "Push + Core", "dayOfWeek": 7,
-      "blocks": [{
-        "kind": "main", "targetMinutes": 55,
-        "exercises": [{
-          "name": "Landmine press (single-arm)",
-          "sets": 4, "repsMin": 8, "repsMax": 8, "perSide": true,
-          "restSeconds": 90,
-          "progression": { "type": "linearWeekly", "incrementKg": 2.5 },
-          "confidence": 0.93
-        }]
-      }]
-    }]
-  }],
-  "unresolved": ["'Rotary torso machine' — no catalog match"]
-}
-```
-
-### 7.3 Exercise resolution
-
-Exact match → alias match → normalized (lowercase, strip parentheticals and equipment words) → trigram similarity ≥ 0.75. Below threshold, the review screen shows a chip: **[ Rotary torso machine ]** → *Match to existing* / *Create new*. Confirming a match writes an alias, so the catalog gets smarter with every import.
-
-### 7.4 Voice, specifically
-
-Voice is **capture, not command**:
-
-1. **Plan dictation** — long-form, one shot, into the parser. Live waveform + interim transcript, editable before parsing.
-2. **In-session quick log** — mic FAB: *"sixty kilos, eight reps, RPE seven"*. Parsed by a **small local grammar** (numbers + unit keywords + rpe), never over the network. Pre-fills the active set for one-tap confirmation; low confidence opens the stepper with what it heard rather than guessing silently.
-
-**Never** put a network round-trip between "user speaks" and "set is recorded."
+Revisit if manual entry ever becomes the bottleneck. Until then this section is
+a record of a decision not taken, which is why it keeps its number rather than
+being deleted.
 
 ---
 
@@ -419,7 +369,7 @@ Landmine press (single-arm) · 4 × 8 · rest 90s        prev: 25 kg × 8 @7
 
 **How a day settles:** nothing logged is `skipped` — starting a session and walking out is not a partial workout. Otherwise `completed` at two thirds of the prescribed sets or more, `partial` below it. One constant, in `settleStatus`, rather than a rule scattered across screens.
 
-One sheet: session RPE (6 dots), energy (5 faces), optional note (voice or text, both optional). Then a summary — sets completed, tonnage, duration, PRs detected — and a single sync push.
+One sheet: session RPE (6 dots), energy (5 faces), optional note. Then a summary — sets completed, tonnage, duration, PRs detected — and a single sync push.
 
 ### 9.4 Interruption safety
 
@@ -700,7 +650,6 @@ lib/
 
 supabase/
 ├── migrations/           # versioned SQL, committed
-├── functions/parse-plan/
 └── seed.sql              # exercise catalog, ids derived through the same v5 namespace
 ```
 
@@ -741,7 +690,7 @@ supabase/
 
 | Layer | Tool | Must cover |
 |---|---|---|
-| Unit | `test` | `metrics_service` (e1RM edge cases: 0 reps, bodyweight, unilateral doubling), `progression_service`, both plan parsers against real plan fixtures |
+| Unit | `test` | `metrics_service` (e1RM edge cases: 0 reps, bodyweight, unilateral doubling), `progression_service`, `schedule_materializer` |
 | DB | `drift` in-memory | **Every migration, step by step, with seeded data.** A bad migration is the one bug that destroys history. |
 | Sync | fakes | Outbox drains, retries, dedupes; conflict resolution; offline→online transition; crash between data write and outbox write |
 | Widget | `flutter_test` + `BlocProvider` overrides / `bloc_test` | Set chip states, empty/loading/error for every list, RTL and 1.4× text-scale golden tests |
@@ -764,7 +713,7 @@ Analyzer clean, tests written, empty/loading/error states designed, dark + light
 - **Local JSON export remains a first-class feature**, not a fallback: full relational dump with `schemaVersion`, shared via `share_plus`, restorable with a preview-diff. Plus a **silent weekly auto-export** keeping the last 4. Supabase is not a backup strategy on its own — a bad migration or an RLS mistake propagates to the server too.
 - **Migrations** with explicit `MigrationStrategy` and a test per version step. `deleteOnSchemaChange` never leaves dev.
 - **Supabase session** in `flutter_secure_storage`; auto-refresh on resume; a failed refresh must degrade to offline mode, never to a data-loss path or a login wall.
-- **Permission preambles** for mic, speech, photos, health — each with a graceful denied path, because every voice feature has a tap equivalent.
+- **Permission preambles** for photos and health — each with a graceful denied path.
 - If the app is ever published: the anonymous-auth identity plus health-adjacent data means a privacy policy URL, an App Store privacy label (Health & Fitness, Identifiers, Photos), and a working account-deletion path — Apple requires deletion, not just sign-out.
 
 ---
@@ -775,7 +724,7 @@ Analyzer clean, tests written, empty/loading/error states designed, dark + light
 
 1. Flavors, app identity, theme tokens, l10n scaffold, CI. **First commit, not later** — this is the "production-grade" bill and it's cheapest now.
 2. Drift schema with UUID keys + sync columns + seeded catalog (~120 exercises covering your plan).
-3. Manual program builder (phases → sessions → blocks → exercises). **Before the parser** — the parser writes into this model, so it must exist and be right first.
+3. Manual program builder (phases → sessions → blocks → exercises). The only way a program gets created (§7).
 4. Week-strip day assignment + schedule materialization.
 5. **Active session screen**: set chips, steppers, RPE dots, rest timer, crash-safe persistence.
 6. Today + finalize + summary.
@@ -790,22 +739,18 @@ Analyzer clean, tests written, empty/loading/error states designed, dark + light
 10. Sync status surfacing + Settings diagnostics.
 11. Storage bucket + opt-in photo sync.
 
-### Phase 3 — Ingestion & insight
+### Phase 3 — Insight
 
-12. Heuristic markdown parser → review screen → commit.
-13. `parse-plan` Edge Function + LLM parser behind the same interface.
-14. Voice dictation for plan capture.
-15. Insights tab with the Day/Week/Month/Cycle filter.
-16. Check-ins, metric definitions, phase report.
+12. Insights tab with the Day/Week/Month/Cycle filter.
+13. Check-ins, metric definitions, phase report.
 
 ### Phase 4 — Leverage
 
-17. PR detection + Records + celebration moment.
-18. Progression rules auto-prefilling next week's targets.
-19. In-session voice quick-log (local grammar).
-20. Notifications: session reminder, check-in due, rest timer.
-21. Health / Health Connect read for weight + steps.
-22. Home-screen widget: today's session, one-tap start.
+14. PR detection + Records + celebration moment.
+15. Progression rules auto-prefilling next week's targets.
+16. Notifications: session reminder, check-in due, rest timer.
+17. Health / Health Connect read for weight + steps.
+18. Home-screen widget: today's session, one-tap start.
 
 ### Phase 5 — If it earns it
 
@@ -839,7 +784,6 @@ Identity linking (email/Apple) + true multi-device with Realtime, Apple Watch co
 | Custom sync engine | PowerSync / Realtime-as-sync | Purpose-built beats a heavy dependency for ~10 tables; PowerSync is worth revisiting only if multi-device gets serious. |
 | Client UUIDs, soft deletes | Server sequences, hard deletes | Offline creation and delete propagation. |
 | Aggregation client-side | Postgres views | Insights must work offline. |
-| Edge Function for LLM parsing | Client-side API key | An API key in a shipped binary is an extracted API key. |
 | `gen_l10n` + ARB | `easy_localization`, `slang` | First-party, compile-checked, no runtime key failures. |
 | `lab.aether.groove` | `aether.lab.groove` | Correct reverse-DNS. |
 | e1RM as primary strength metric | Raw top weight | Rep ranges shift by design across cycles. |

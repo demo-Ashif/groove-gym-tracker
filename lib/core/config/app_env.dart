@@ -36,9 +36,9 @@ abstract final class AppEnv {
 /// **What may live here:** the Supabase project URL and anon key. Both are
 /// public by design and protected by RLS, which is why they can be committed.
 ///
-/// **What may never live here:** the Anthropic key, or any service-role key.
-/// Those stay server-side in the `parse-plan` Edge Function (ADR §5.3) — a key
-/// in a shipped binary is an extracted key, whatever supplies it.
+/// **What may never live here:** any service-role key or third-party API key.
+/// Those stay server-side — a key in a shipped binary is an extracted key,
+/// whatever supplies it.
 abstract final class _Dev {
   static const supabaseUrl = '';
   static const supabaseAnonKey = '';

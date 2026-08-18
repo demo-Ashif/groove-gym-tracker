@@ -870,7 +870,7 @@
   "@planCreateProgram": {
     "description": "Primary action on the Plan tab."
   },
-  "planPlaceholderBody": "Paste, dictate or build a program. Groove turns it into a day-by-day schedule you tap through.",
+  "planPlaceholderBody": "Build a program — phases, sessions, exercises. Groove turns it into a day-by-day schedule you tap through.",
   "@planPlaceholderBody": {
     "description": "Body copy on the Plan tab before the program builder exists."
   },

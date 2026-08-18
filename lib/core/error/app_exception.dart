@@ -1,6 +1,6 @@
 /// Data-layer exceptions. Thrown by data sources (Drift DAOs, the Supabase
-/// client, the plan parser), caught at the repository boundary and mapped to
-/// a domain `Failure`.
+/// client), caught at the repository boundary and mapped to a domain
+/// `Failure`.
 ///
 /// The messages here are **developer-facing only** — they go to logs and
 /// crash reports, never to a widget. User-facing copy is resolved from ARB at
@@ -53,9 +53,10 @@ final class CacheException extends AppException {
   const CacheException([super.debugMessage = 'Local storage error']);
 }
 
-/// A plan (pasted, dictated or returned by the parser) could not be read.
+/// Input could not be read into the shape the domain expects — a malformed
+/// backup file, a rejected name.
 final class ParseException extends AppException {
-  const ParseException([super.debugMessage = 'Could not read the plan']);
+  const ParseException([super.debugMessage = 'Could not read the input']);
 }
 
 /// Anything unanticipated.

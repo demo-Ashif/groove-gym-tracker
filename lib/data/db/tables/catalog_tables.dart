@@ -27,9 +27,10 @@ class Exercises extends Table with SyncedRow {
   /// typed. Never translated — it is their own words. Null for system rows.
   TextColumn get customName => text().nullable()();
 
-  /// JSON array of alternate spellings. The plan parser writes to this on
-  /// every confirmed match, so the catalog gets smarter with each import
-  /// (ADR §7.3).
+  /// JSON array of alternate spellings. Seeded, and currently unread —
+  /// automated plan ingestion is deferred (ADR §7). Kept because adding a
+  /// column to a table that already has rows costs a migration and this does
+  /// not.
   TextColumn get aliases => text().withDefault(const Constant('[]'))();
 
   TextColumn get pattern => textEnum<MovementPattern>()();

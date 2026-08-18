@@ -18,9 +18,11 @@ abstract interface class ExerciseRepository {
   /// synced yet, or a row purged after 90 days.
   Future<Result<Exercise?>> findById(String id);
 
-  /// Matches literal names and aliases, for the plan parser's exercise
-  /// resolution (ADR §7.3). Does not match seeded names: those are ARB keys,
-  /// and only the presentation layer can resolve them for the active locale.
+  /// Matches literal names and aliases. No caller today — plan ingestion is
+  /// deferred (ADR §7) — but it is the query a catalog search would use.
+  ///
+  /// Does not match seeded names: those are ARB keys, and only the
+  /// presentation layer can resolve them for the active locale.
   Future<Result<List<Exercise>>> findByText(String query);
 
   /// Creates a user-defined exercise.

@@ -39,7 +39,7 @@ class Exercise extends Equatable {
   /// Literal, in the user's own language.
   final String? customName;
 
-  /// Alternate spellings the plan parser matches against.
+  /// Alternate spellings. Seeded but unread; see ADR §7.
   final List<String> aliases;
 
   final MovementPattern pattern;

@@ -13,9 +13,9 @@ import '../../../domain/enums/training_enums.dart';
 /// half-added exercise fails the build rather than rendering blank in a chart
 /// legend six weeks later.
 ///
-/// `aliases` seed the plan parser's matcher (ADR §7.3); it appends to them
-/// every time the user confirms a match, so the catalog gets smarter with each
-/// import.
+/// `aliases` are seeded but currently unread — the matcher they exist for is
+/// deferred (ADR §7). Curate them anyway: backfilling spellings across ~120
+/// rows later is worse than writing them down while the row is being added.
 class SeedExercise {
   const SeedExercise({
     required this.nameKey,
