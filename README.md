@@ -10,24 +10,38 @@ Design and architecture: [`docs/groove_adr.md`](docs/groove_adr.md).
 
 ## Running
 
-No build flavors: one native build variant, one application ID
-(`lab.aether.groove`), one home-screen app. `dev` and `prod` are Dart-side
-config only — the entrypoint picks the environment, `--dart-define-from-file`
-supplies its Supabase URL and anon key.
+One native build variant, one application ID (`lab.aether.groove`), one
+home-screen app. `dev` and `prod` are Dart-side config only — the entrypoint
+picks the environment and its values are compiled in from
+`lib/core/config/app_env.dart`. No dart-defines, no `env/*.json`.
 
 ```bash
-flutter run -t lib/main_dev.dart  --dart-define-from-file=env/dev.json
-flutter run -t lib/main_prod.dart --dart-define-from-file=env/prod.json
+flutter run -t lib/main_dev.dart
+flutter run -t lib/main_prod.dart
 ```
 
-| Environment | Entrypoint | Config | Crash reporting |
+| Environment | Entrypoint | Values | Crash reporting |
 |---|---|---|---|
-| dev | `lib/main_dev.dart` | `env/dev.json` | off |
-| prod | `lib/main_prod.dart` | `env/prod.json` | on |
+| dev | `lib/main_dev.dart` | `app_env.dart` → `_Dev` | off |
+| prod | `lib/main_prod.dart` | `app_env.dart` → `_Prod` | on |
 
 Because there is one application ID, dev and prod overwrite each other on a
-device — they do not install side by side. Add flavors back if that becomes
-necessary.
+device — they do not install side by side.
+
+### Running from Xcode (iOS only)
+
+The **Dev** and **Prod** schemes select the `Debug-Dev` / `Debug-Prod` build
+configurations, whose xcconfig (`ios/Flutter/Debug-Dev.xcconfig` and friends)
+sets `FLUTTER_TARGET` to the matching entrypoint — so hitting Run in Xcode
+launches the right one without passing `-t`. Each flavour has Debug, Release
+and Profile configurations; Archive uses `Release-<flavour>`.
+
+`FLUTTER_TARGET` lives **only** in those xcconfig files. Do not also set it in
+the target's build settings — a target-level setting silently overrides the
+xcconfig and the scheme stops mattering.
+
+Android defines no product flavors, so `--flavor` works on iOS only and is not
+used from the CLI.
 
 ## Code generation
 

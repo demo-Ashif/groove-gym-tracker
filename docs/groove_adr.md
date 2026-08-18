@@ -698,7 +698,6 @@ lib/
     ├── records/
     └── settings/       # the Profile tab: preferences, about, diagnostics
 
-env/                      # dev.json / stg.json / prod.json (--dart-define-from-file)
 supabase/
 ├── migrations/           # versioned SQL, committed
 ├── functions/parse-plan/
@@ -720,7 +719,8 @@ supabase/
 | `prod` | `lab.aether.groove` | Groove | `groove-prod` | on |
 
 - Three flavors installable side by side — you can keep a real logging history on prod while breaking dev.
-- Config via `--dart-define-from-file=env/dev.json`, read into `AppEnv`. **No secrets in `env/*.json`** beyond the Supabase URL + anon key (both public by design and protected by RLS). The Anthropic key never leaves the Edge Function.
+- Config compiled in from `core/config/app_env.dart`, read through `AppEnv`. No dart-defines and no `env/*.json` — the only values that vary are the Supabase URL + anon key, both public by design and protected by RLS, so a checked-in constant is simpler than a build-time define. The Anthropic key never leaves the Edge Function.
+- **iOS only:** Dev/Prod Xcode schemes select `Debug-Dev` / `Debug-Prod` (plus Release and Profile) build configurations, whose xcconfig sets `FLUTTER_TARGET`. This is scheme wiring, not a flavour: one application ID, one native build. `FLUTTER_TARGET` lives only in the xcconfig — a target-level copy would override it.
 - Android: `flavorDimensions "env"`, `applicationIdSuffix`, per-flavor `resValue` app label and icon (tint dev/stg icons so you can tell them apart on the home screen).
 - iOS: three schemes + xcconfigs; `PRODUCT_BUNDLE_IDENTIFIER` and `CFBundleDisplayName` per configuration.
 - Release builds: `--obfuscate --split-debug-info=build/symbols` (upload symbols to Sentry), R8 on Android, `--split-per-abi` or App Bundle.

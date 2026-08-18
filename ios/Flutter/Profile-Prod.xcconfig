@@ -1,0 +1,18 @@
+// Prod environment, Profile build.
+//
+// Mirrors Profile.xcconfig, plus the one line that makes this
+// configuration different: the Dart entrypoint.
+//
+// Generated.xcconfig is written by the Flutter tool on every build and always
+// sets FLUTTER_TARGET=lib/main.dart, so the override below has to come after
+// both includes. That override is the only thing that makes the Prod
+// scheme launch the right entrypoint.
+//
+// This file is the single source of truth for the entrypoint: FLUTTER_TARGET
+// is deliberately NOT set in the Profile-Prod build settings of
+// project.pbxproj, because a target-level setting would silently win over
+// this one and the scheme would stop mattering.
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.profile-prod.xcconfig"
+#include "Generated.xcconfig"
+
+FLUTTER_TARGET=lib/main_prod.dart

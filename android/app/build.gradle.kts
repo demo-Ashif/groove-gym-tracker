@@ -32,10 +32,14 @@ android {
         versionName = flutter.versionName
     }
 
-    // No product flavors. dev/prod differ only in Dart-side config, passed at
-    // build time with --dart-define-from-file=env/<env>.json and selected by
-    // entrypoint (lib/main_dev.dart | lib/main_prod.dart). One application ID,
-    // one installable app. Revisit if side-by-side installs are ever needed.
+    // No product flavors. dev/prod differ only in Dart-side config, compiled in
+    // from lib/core/config/app_env.dart and selected by entrypoint
+    // (lib/main_dev.dart | lib/main_prod.dart). One application ID, one
+    // installable app. Revisit if side-by-side installs are ever needed.
+    //
+    // iOS has Dev/Prod Xcode schemes backed by per-environment build
+    // configurations, so `--flavor` works there and not here. Keep CLI runs
+    // flavorless (`flutter run -t lib/main_dev.dart`) so they work on both.
 
     buildTypes {
         release {
