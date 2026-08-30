@@ -9,6 +9,22 @@
          <ExecutionAction
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
+               title = "Sync Swift Package Minimum iOS Version"
+               scriptText = "# Raise FlutterGeneratedPluginSwiftPackage's minimum iOS version to match the&#10;# Runner target's before Xcode resolves Swift packages.&#10;#&#10;# The Flutter tool always regenerates that manifest with its own default&#10;# (currently 13.0) on &quot;flutter pub get&quot;, and only raises it to the project's&#10;# deployment target during a &quot;flutter build/run ios&quot;. A plugin that needs more&#10;# than the default (file_picker_darwin requires 14.0) therefore fails to&#10;# resolve on the first Xcode-driven build after any pub get.&#10;#&#10;# FLUTTER_ROOT comes from Flutter/Generated.xcconfig, so this honours the FVM&#10;# SDK pinned in .fvmrc without needing fvm on Xcode's PATH.&#10;set -e&#10;PACKAGE_MANIFEST=&quot;$SRCROOT/Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage/Package.swift&quot;&#10;[ -f &quot;$PACKAGE_MANIFEST&quot; ] || exit 0&#10;[ -n &quot;$IPHONEOS_DEPLOYMENT_TARGET&quot; ] || exit 0&#10;MANIFEST_MIN=$(sed -n 's/.*\.iOS(&quot;\([0-9.]*\)&quot;).*/\1/p' &quot;$PACKAGE_MANIFEST&quot; | head -1)&#10;[ -n &quot;$MANIFEST_MIN&quot; ] || exit 0&#10;[ &quot;$MANIFEST_MIN&quot; = &quot;$IPHONEOS_DEPLOYMENT_TARGET&quot; ] &amp;&amp; exit 0&#10;OLDEST=$(printf '%s\n%s\n' &quot;$MANIFEST_MIN&quot; &quot;$IPHONEOS_DEPLOYMENT_TARGET&quot; | sort -V | head -1)&#10;[ &quot;$OLDEST&quot; = &quot;$MANIFEST_MIN&quot; ] || exit 0&#10;echo &quot;note: Swift package minimum iOS $MANIFEST_MIN is below the $IPHONEOS_DEPLOYMENT_TARGET deployment target; regenerating.&quot;&#10;cd &quot;$SRCROOT/..&quot;&#10;&quot;$FLUTTER_ROOT/bin/flutter&quot; build ios --config-only --no-codesign --flavor Prod&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "97C146ED1CF9000F007C117D"
+                     BuildableName = "Runner.app"
+                     BlueprintName = "Runner"
+                     ReferencedContainer = "container:Runner.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
                title = "Run Prepare Flutter Framework Script"
                scriptText = "/bin/sh &quot;$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh&quot; prepare&#10;">
                <EnvironmentBuildable>

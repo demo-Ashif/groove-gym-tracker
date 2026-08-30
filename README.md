@@ -43,13 +43,39 @@ xcconfig and the scheme stops mattering.
 Android defines no product flavors, so `--flavor` works on iOS only and is not
 used from the CLI.
 
+### iOS dependencies: use `tool/pubget.sh`
+
+iOS plugins are Swift Packages; CocoaPods is deintegrated and there is no
+Podfile. The catch is that `flutter pub get` regenerates
+`ios/Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage/Package.swift`
+with the Flutter tool's own minimum iOS version (13.0 as of 3.44), and only
+raises it to the Runner target's 15.0 during a `flutter build/run ios`. Since
+`file_picker_darwin` needs 14.0, a plain `pub get` followed by an Xcode build
+fails package resolution:
+
+```
+The package product 'file-picker-darwin' requires minimum platform version
+14.0 for the iOS platform, but this target supports 13.0
+```
+
+So run pub get through the wrapper, which repairs the manifest immediately:
+
+```bash
+tool/pubget.sh                   # instead of `flutter pub get`
+```
+
+The Dev and Prod schemes also carry a build pre-action that repairs it, but
+Xcode resolves packages *before* pre-actions run — that safety net only takes
+effect from the second build onwards. The wrapper is what keeps the first one
+green.
+
 ## Code generation
 
 Both generators write gitignored output, so a fresh clone needs them before
 `analyze` or `test`:
 
 ```bash
-flutter pub get
+tool/pubget.sh                   # see "iOS dependencies" above
 flutter gen-l10n                 # lib/l10n/arb -> lib/l10n/generated
 dart run build_runner build      # freezed / json_serializable
 ```

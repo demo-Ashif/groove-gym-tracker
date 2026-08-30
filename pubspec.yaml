@@ -1,7 +1,7 @@
 name: groove
 description: "Groove — follow the plan, see the line move. Offline-first gym tracker."
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.1.0+2
 
 environment:
   sdk: ^3.11.4
@@ -47,6 +47,38 @@ dev_dependencies:
   # Direct, because the migration test builds a v1 database from raw DDL
   # before drift is allowed anywhere near it.
   sqlite3: ^3.5.1
+  flutter_native_splash: ^2.4.8
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/icon-1024.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  # Adaptive icon configuration for modern Android
+  adaptive_icon_background: "assets/icons/android-background.png" # Can be a hex color or an image path
+  adaptive_icon_foreground: "assets/icons/android-foreground.png"
+
+flutter_native_splash:
+  # The background color of the splash screen
+  color: "#0B0C0E"
+  # The central image (should be a PNG with transparency)
+  image: "assets/icons/android-foreground.png"
+  # Dark mode variants
+  color_dark: "#0B0C0E"
+  image_dark: "assets/icons/android-foreground.png"
+  # Target platforms
+  android: true
+  ios: true
+  web: false
+  android_12:
+    # The image must fit within a circular mask
+    image: "assets/icons/android-foreground.png"
+    icon_background_color: "#0B0C0E"
+    # Dark mode variants for Android 12
+    image_dark: "assets/icons/android-foreground.png"
+    icon_background_color_dark: "#0B0C0E"
 
 flutter:
   uses-material-design: true
