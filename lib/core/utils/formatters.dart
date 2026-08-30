@@ -52,6 +52,13 @@ class Formatters {
   /// `Sun, 16 Aug` — a session card's date line.
   String mediumDate(DateTime date) => DateFormat.MMMEd(locale).format(date);
 
+  /// `16 Aug` — one end of a range label, where the year is already implied
+  /// by the other end or by the filter above it.
+  String dayAndMonth(DateTime date) => DateFormat.MMMd(locale).format(date);
+
+  /// `August 2026` — the Month filter's label.
+  String monthAndYear(DateTime date) => DateFormat.yMMMM(locale).format(date);
+
   /// `16 August 2026`.
   String longDate(DateTime date) => DateFormat.yMMMMd(locale).format(date);
 

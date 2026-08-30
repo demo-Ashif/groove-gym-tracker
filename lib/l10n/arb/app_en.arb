@@ -694,6 +694,167 @@
   "@insightsTitle": {
     "description": "Screen title for the Insights tab."
   },
+  "insightsAdherenceEmptyBody": "Adherence measures what you did against what the program asked for. Build a program and this ring starts filling.",
+  "@insightsAdherenceEmptyBody": {
+    "description": "Body copy on the adherence card when the selected range has no planned training in it."
+  },
+  "insightsAdherenceEmptyTitle": "Nothing planned here",
+  "@insightsAdherenceEmptyTitle": {
+    "description": "Title of the adherence card's empty state."
+  },
+  "insightsAdherenceOpenPlan": "Open Plan",
+  "@insightsAdherenceOpenPlan": {
+    "description": "Action on the adherence empty state. Opens the Plan tab."
+  },
+  "insightsAdherenceSemantics": "Adherence {percent}. {completed} of {planned} planned sets completed.",
+  "@insightsAdherenceSemantics": {
+    "description": "Screen-reader description of the adherence ring, which is otherwise a drawing with no text a reader can reach.",
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "completed": {
+        "type": "String"
+      },
+      "planned": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsAdherenceSessions": "{completed} of {planned} sessions",
+  "@insightsAdherenceSessions": {
+    "description": "Sessions completed against sessions scheduled, under the adherence ring.",
+    "placeholders": {
+      "completed": {
+        "type": "String"
+      },
+      "planned": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsAdherenceSets": "{completed} of {planned} sets",
+  "@insightsAdherenceSets": {
+    "description": "Sets completed against sets prescribed, under the adherence ring.",
+    "placeholders": {
+      "completed": {
+        "type": "String"
+      },
+      "planned": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsAdherenceTitle": "Adherence",
+  "@insightsAdherenceTitle": {
+    "description": "Card title for the adherence ring."
+  },
+  "insightsAdherenceUnplanned": "No target",
+  "@insightsAdherenceUnplanned": {
+    "description": "Shown in place of a percentage when the range prescribed nothing. A range with no program is not a range you failed."
+  },
+  "insightsRangeAll": "All",
+  "@insightsRangeAll": {
+    "description": "Filter chip for the unbounded range. Keep very short — it sits in a row of five."
+  },
+  "insightsRangeAllLabel": "All time",
+  "@insightsRangeAllLabel": {
+    "description": "Label under the filter when the unbounded range is selected."
+  },
+  "insightsRangeCycle": "Cycle",
+  "@insightsRangeCycle": {
+    "description": "Filter chip for the current training phase. Only shown while a program with phases is running."
+  },
+  "insightsRangeDay": "Day",
+  "@insightsRangeDay": {
+    "description": "Filter chip for a single day."
+  },
+  "insightsRangeLabel": "Range",
+  "@insightsRangeLabel": {
+    "description": "Screen-reader label for the range filter row."
+  },
+  "insightsRangeMonth": "Month",
+  "@insightsRangeMonth": {
+    "description": "Filter chip for a calendar month."
+  },
+  "insightsRangeNext": "Next range",
+  "@insightsRangeNext": {
+    "description": "Tooltip and screen-reader label for the forward arrow."
+  },
+  "insightsRangePrevious": "Previous range",
+  "@insightsRangePrevious": {
+    "description": "Tooltip and screen-reader label for the back arrow."
+  },
+  "insightsRangeSpan": "{from} – {to}",
+  "@insightsRangeSpan": {
+    "description": "A span of days, e.g. the week or cycle currently being shown. Uses an en dash.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsRangeWeek": "Week",
+  "@insightsRangeWeek": {
+    "description": "Filter chip for a week."
+  },
+  "insightsSkipsTitle": "Skipped sets",
+  "@insightsSkipsTitle": {
+    "description": "Heading above the skipped-sets breakdown inside the adherence card."
+  },
+  "insightsWeightAverage": "{days}-day average",
+  "@insightsWeightAverage": {
+    "description": "Legend for the smoothed line on the body-weight chart.",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsWeightDelta": "{delta} in this range",
+  "@insightsWeightDelta": {
+    "description": "Change in body weight across the selected range, already signed and formatted.",
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsWeightEmptyBody": "One weigh-in is a number. Two are a direction — and daily weight swings more than a kilo on water alone, so the line matters more than any single morning.",
+  "@insightsWeightEmptyBody": {
+    "description": "Body copy on the body-weight card before there is enough data to draw a trend."
+  },
+  "insightsWeightEmptyTitle": "Two weigh-ins make a trend",
+  "@insightsWeightEmptyTitle": {
+    "description": "Title of the body-weight card's empty state."
+  },
+  "insightsWeightGoToProfile": "Record weight",
+  "@insightsWeightGoToProfile": {
+    "description": "Action on the body-weight empty state. Opens the Profile tab, where weigh-ins are recorded."
+  },
+  "insightsWeightRaw": "Weigh-ins",
+  "@insightsWeightRaw": {
+    "description": "Legend entry for the raw weigh-in dots on the body-weight chart."
+  },
+  "insightsWeightSemantics": "Body weight trend. {count} entries, latest {weight}.",
+  "@insightsWeightSemantics": {
+    "description": "Screen-reader description of the body-weight chart, which is otherwise a drawing.",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsWeightTitle": "Body weight",
+  "@insightsWeightTitle": {
+    "description": "Card title for the body-weight trend."
+  },
   "navInsights": "Insights",
   "@navInsights": {
     "description": "Bottom navigation label for the Insights tab. Keep short — it sits under a 24dp icon."
@@ -1334,6 +1495,15 @@
   "unitsKg": "{value} kg",
   "@unitsKg": {
     "description": "A weight in kilograms.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "unitsLb": "{value} lb",
+  "@unitsLb": {
+    "description": "A weight change in pounds, for users on imperial units. Deltas are shown in pounds rather than stone — a week's change is never a whole stone.",
     "placeholders": {
       "value": {
         "type": "String"

@@ -8,9 +8,12 @@ import '../../core/logging/app_logger.dart';
 import '../../domain/enums/training_enums.dart';
 import 'daos/check_in_dao.dart';
 import 'daos/exercise_dao.dart';
+import 'daos/insights_dao.dart';
 import 'daos/log_dao.dart';
 import 'daos/plan_dao.dart';
 import 'daos/schedule_dao.dart';
+import 'migrations.dart';
+import 'pre_migration_snapshot.dart';
 import 'seed/exercise_seed.dart';
 import 'tables/catalog_tables.dart';
 import 'tables/check_in_tables.dart';
@@ -59,25 +62,28 @@ String systemExerciseId(String nameKey) =>
     MetricDefinitions,
     SyncOutbox,
   ],
-  daos: [CheckInDao, ExerciseDao, LogDao, PlanDao, ScheduleDao],
+  daos: [CheckInDao, ExerciseDao, InsightsDao, LogDao, PlanDao, ScheduleDao],
 )
 class AppDatabase extends _$AppDatabase {
   /// Production: opens `groove.sqlite` in the app's documents directory, on a
   /// background isolate so a set write never competes with the frame the user
   /// is looking at.
-  AppDatabase() : super(driftDatabase(name: 'groove'));
+  AppDatabase() : snapshotSink = null, super(driftDatabase(name: 'groove'));
 
   /// For tests and migration checks — pass `NativeDatabase.memory()`.
-  AppDatabase.withExecutor(super.executor);
+  ///
+  /// [snapshotSink] redirects the pre-migration backup away from the real
+  /// documents directory, which is also the seam a migration test uses to
+  /// assert that the backup was taken at all.
+  AppDatabase.withExecutor(super.executor, {this.snapshotSink});
 
-  /// Bump only alongside a `MigrationStrategy` step **and** a test that walks
+  /// Where the pre-migration backup is written. Null means the app's own
+  /// documents directory.
+  final SnapshotSink? snapshotSink;
+
+  /// Bump only alongside a step in [AppMigrations] **and** a test that walks
   /// data from the previous version through it. A bad migration is the one bug
   /// that destroys history (ADR §17.2).
-  ///
-  /// **v2 is pre-release and destructive.** Nothing has shipped, so the
-  /// prescription model changed shape (single rep target, time targets) without
-  /// a data-preserving step. The rule above applies from the first release
-  /// build onward, not to this one.
   @override
   int get schemaVersion => 2;
 
@@ -90,21 +96,21 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (m, from, to) async {
       AppLogger.i('Schema upgrade $from -> $to', tag: 'DB');
 
-      // Pre-release reset: drop everything and rebuild. Deliberate, and only
-      // defensible because no build has shipped. Every future step is an
-      // `if (from < n)` block that preserves data, with a test that walks
-      // rows through it.
-      if (from < 2) {
-        for (final entity in allSchemaEntities.reversed) {
-          await m.drop(entity);
-        }
-        await m.createAll();
-        await _seedCatalog();
-        AppLogger.w(
-          'Pre-release schema reset: local data was discarded',
-          tag: 'DB',
-        );
-      }
+      // The whole database goes to a JSON file first. Migrations here are
+      // non-destructive by contract, but they rewrite the only copy of the
+      // user's training that exists — so there is an undo on disk before a
+      // single table is touched.
+      await PreMigrationSnapshot(
+        this,
+        sink: snapshotSink,
+      ).capture(fromVersion: from, toVersion: to);
+
+      await AppMigrations.apply(this, m, from, to);
+
+      // Idempotent, keyed on deterministic ids: a release that adds catalog
+      // exercises gets them here, and everything already present is left
+      // exactly as the user edited it.
+      await _seedCatalog();
     },
     beforeOpen: (details) async {
       // Off by default in SQLite, and everything in this schema leans on it:

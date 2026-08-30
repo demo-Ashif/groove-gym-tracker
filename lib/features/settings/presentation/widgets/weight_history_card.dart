@@ -8,9 +8,9 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../domain/entities/check_in.dart';
 import '../../../../domain/repositories/check_in_repository.dart';
 import '../../../../domain/values/body_metrics.dart';
+import '../../../../shared/l10n/body_format.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../cubit/preferences_cubit.dart';
-import 'body_labels.dart';
 
 /// The bodyweight trend — the last handful of entries with the change between
 /// them, which is the only thing a single number can't tell you.

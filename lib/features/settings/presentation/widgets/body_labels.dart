@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/extensions/context_extensions.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../../../domain/values/body_metrics.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 
@@ -35,44 +34,4 @@ extension BmiBandLabel on BmiBand {
     BmiBand.healthy => context.semanticColors.onSuccessContainer,
     _ => context.colors.onSurfaceVariant,
   };
-}
-
-/// Renders a height in the user's units: `178 cm`, or `5' 10"`.
-String formatHeight(
-  BuildContext context, {
-  required double cm,
-  required UnitSystem unitSystem,
-}) {
-  final l10n = context.l10n;
-  final formatters = Formatters.of(context);
-
-  if (unitSystem.isMetric) {
-    return l10n.unitsCm(formatters.decimal(cm, fractionDigits: 0));
-  }
-
-  final imperial = BodyUnits.cmToFeetInches(cm);
-  return l10n.unitsFeetInches(
-    formatters.integer(imperial.feet),
-    formatters.decimal(imperial.inches, fractionDigits: 0),
-  );
-}
-
-/// Renders a weight in the user's units: `82.5 kg`, or `12 st 13.9 lb`.
-String formatWeight(
-  BuildContext context, {
-  required double kg,
-  required UnitSystem unitSystem,
-}) {
-  final l10n = context.l10n;
-  final formatters = Formatters.of(context);
-
-  if (unitSystem.isMetric) {
-    return l10n.unitsKg(formatters.decimal(kg, fractionDigits: 1));
-  }
-
-  final imperial = BodyUnits.kgToStonePounds(kg);
-  return l10n.unitsStonePounds(
-    formatters.integer(imperial.stone),
-    formatters.decimal(imperial.pounds, fractionDigits: 1),
-  );
 }

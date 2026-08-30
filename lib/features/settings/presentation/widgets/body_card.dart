@@ -10,6 +10,7 @@ import '../../../../domain/entities/check_in.dart';
 import '../../../../domain/repositories/check_in_repository.dart';
 import '../../../../domain/values/body_metrics.dart';
 import '../../../../domain/values/calendar_date.dart';
+import '../../../../shared/l10n/body_format.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/widgets/app_sheet.dart';
 import '../cubit/preferences_cubit.dart';

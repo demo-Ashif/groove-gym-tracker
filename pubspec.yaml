@@ -44,6 +44,9 @@ dev_dependencies:
   bloc_test: ^10.0.0
   drift_dev: ^2.34.0
   mocktail: ^1.0.5
+  # Direct, because the migration test builds a v1 database from raw DDL
+  # before drift is allowed anywhere near it.
+  sqlite3: ^3.5.1
 
 flutter:
   uses-material-design: true

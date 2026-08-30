@@ -4,12 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/backup/backup_service.dart';
 import '../../data/db/app_database.dart';
 import '../../data/repositories/exercise_repository_impl.dart';
+import '../../data/repositories/insights_repository_impl.dart';
 import '../../data/repositories/check_in_repository_impl.dart';
 import '../../data/repositories/log_repository_impl.dart';
 import '../../data/repositories/plan_repository_impl.dart';
 import '../../data/repositories/schedule_repository_impl.dart';
 import '../../data/repositories/shared_prefs_preferences_repository.dart';
 import '../../domain/repositories/exercise_repository.dart';
+import '../../domain/repositories/insights_repository.dart';
 import '../../domain/repositories/check_in_repository.dart';
 import '../../domain/repositories/log_repository.dart';
 import '../../domain/repositories/plan_repository.dart';
@@ -18,6 +20,8 @@ import '../../domain/repositories/schedule_repository.dart';
 import '../../features/active_session/presentation/cubit/active_session_cubit.dart';
 import '../../features/history/presentation/cubit/history_cubit.dart';
 import '../../features/history/presentation/cubit/session_detail_cubit.dart';
+import '../../features/insights/presentation/cubit/insights_cubit.dart';
+import '../../features/insights/presentation/cubit/insights_range_cubit.dart';
 import '../../features/plan/presentation/cubit/plan_list_cubit.dart';
 import '../../features/plan/presentation/cubit/program_editor_cubit.dart';
 import '../../features/plan/presentation/cubit/session_editor_cubit.dart';
@@ -75,6 +79,9 @@ Future<void> configureDependencies(
     ..registerLazySingleton<CheckInRepository>(
       () => CheckInRepositoryImpl(getIt<AppDatabase>().checkInDao),
     )
+    ..registerLazySingleton<InsightsRepository>(
+      () => InsightsRepositoryImpl(getIt<AppDatabase>().insightsDao),
+    )
     ..registerLazySingleton<ScheduleRepository>(
       () => ScheduleRepositoryImpl(
         dao: getIt<AppDatabase>().scheduleDao,
@@ -88,6 +95,13 @@ Future<void> configureDependencies(
     // App-scoped: `MaterialApp` rebuilds off this, so there is exactly one.
     ..registerLazySingleton<PreferencesCubit>(
       () => PreferencesCubit(repository: getIt(), haptics: getIt()),
+      dispose: (cubit) => cubit.close(),
+    )
+    // App-scoped too, and for the same kind of reason: the Insights filter is
+    // a choice the user made, and leaving the tab must not discard it
+    // (ADR §11.1).
+    ..registerLazySingleton<InsightsRangeCubit>(
+      () => InsightsRangeCubit(planRepository: getIt()),
       dispose: (cubit) => cubit.close(),
     )
     // Screen-scoped: each page's `BlocProvider` owns and closes these, which
@@ -109,6 +123,9 @@ Future<void> configureDependencies(
         exerciseRepository: getIt(),
         scheduledSessionId: scheduledSessionId,
       ),
+    )
+    ..registerFactory<InsightsCubit>(
+      () => InsightsCubit(repository: getIt()),
     )
     ..registerFactory<HistoryCubit>(
       () => HistoryCubit(logRepository: getIt(), exerciseRepository: getIt()),

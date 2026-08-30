@@ -626,6 +626,8 @@ lib/
 ├── data/
 │   ├── db/
 │   │   ├── app_database.dart     # @DriftDatabase + MigrationStrategy + seeding
+│   │   ├── migrations.dart       # one non-destructive step per schema version
+│   │   ├── pre_migration_snapshot.dart # full JSON backup taken before a step
 │   │   ├── tables/               # sync_columns (the §4.2 mixin), catalog, plan,
 │   │   │                         # log, check_in, sync
 │   │   ├── daos/                 # ExerciseDao, then PlanDao, LogDao, InsightsDao…
@@ -691,7 +693,7 @@ supabase/
 | Layer | Tool | Must cover |
 |---|---|---|
 | Unit | `test` | `metrics_service` (e1RM edge cases: 0 reps, bodyweight, unilateral doubling), `progression_service`, `schedule_materializer` |
-| DB | `drift` in-memory | **Every migration, step by step, with seeded data.** A bad migration is the one bug that destroys history. |
+| DB | `drift` in-memory, plus a real file for migrations | **Every migration, step by step, from a committed old-schema fixture with real rows.** A bad migration is the one bug that destroys history. |
 | Sync | fakes | Outbox drains, retries, dedupes; conflict resolution; offline→online transition; crash between data write and outbox write |
 | Widget | `flutter_test` + `BlocProvider` overrides / `bloc_test` | Set chip states, empty/loading/error for every list, RTL and 1.4× text-scale golden tests |
 | Golden | `golden_toolkit` | Today, Active Session, Insights in light/dark |
@@ -711,7 +713,7 @@ Analyzer clean, tests written, empty/loading/error states designed, dark + light
 - **Photos** default to **local-only**, in the app's private documents directory, referenced by *relative* path (iOS container paths change between builds — never persist absolute paths). Cloud photo sync is an explicit opt-in toggle; when on, private bucket + short-lived signed URLs only.
 - **No analytics, no ad SDKs, no third-party trackers.** Sentry is opt-in and scrubbed.
 - **Local JSON export remains a first-class feature**, not a fallback: full relational dump with `schemaVersion`, shared via `share_plus`, restorable with a preview-diff. Plus a **silent weekly auto-export** keeping the last 4. Supabase is not a backup strategy on its own — a bad migration or an RLS mistake propagates to the server too.
-- **Migrations** with explicit `MigrationStrategy` and a test per version step. `deleteOnSchemaChange` never leaves dev.
+- **Migrations never destroy data — in dev or in prod.** No `deleteOnSchemaChange`, no drop-and-recreate, no "pre-release reset": the device holds the only copy of the user's training. Steps live in `data/db/migrations.dart`, one `case` per version, each with a test in `test/data/migration_test.dart` that builds the **old** schema from a committed DDL fixture (`test/data/fixtures/schema_v<n>.sql`), fills it with rows, upgrades, and asserts the rows survived unchanged. A version with no step throws and leaves the database untouched, so a later build can still migrate it. Before any step runs, `PreMigrationSnapshot` writes every table to a timestamped JSON file in the documents directory (newest three kept) — the undo for a migration that turns out to be wrong.
 - **Supabase session** in `flutter_secure_storage`; auto-refresh on resume; a failed refresh must degrade to offline mode, never to a data-loss path or a login wall.
 - **Permission preambles** for photos and health — each with a graceful denied path.
 - If the app is ever published: the anonymous-auth identity plus health-adjacent data means a privacy policy URL, an App Store privacy label (Health & Fitness, Identifiers, Photos), and a working account-deletion path — Apple requires deletion, not just sign-out.
