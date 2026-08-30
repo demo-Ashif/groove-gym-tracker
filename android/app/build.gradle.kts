@@ -6,7 +6,10 @@ plugins {
 }
 
 android {
-    namespace = "com.example.groove_gym_tracker"
+    // Reverse-DNS of the aether.lab domain (ADR §1.2). The namespace never
+    // carries a flavor suffix — only the application ID does, or R-class
+    // resolution breaks.
+    namespace = "lab.aether.groove"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,15 +23,23 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.groove_gym_tracker"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Permanent once published — Android will never allow a change.
+        applicationId = "lab.aether.groove"
+        // Android 8.0 (ADR: iOS 15+ / Android 8+, API 26).
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
+
+    // No product flavors. dev/prod differ only in Dart-side config, compiled in
+    // from lib/core/config/app_env.dart and selected by entrypoint
+    // (lib/main_dev.dart | lib/main_prod.dart). One application ID, one
+    // installable app. Revisit if side-by-side installs are ever needed.
+    //
+    // iOS has Dev/Prod Xcode schemes backed by per-environment build
+    // configurations, so `--flavor` works there and not here. Keep CLI runs
+    // flavorless (`flutter run -t lib/main_dev.dart`) so they work on both.
 
     buildTypes {
         release {

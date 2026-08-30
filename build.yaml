@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # Timestamps are stored as ISO-8601 text rather than Unix seconds.
+          # Two reasons: it survives the round trip to Postgres `timestamptz`
+          # without a lossy conversion in the sync layer, and a database a
+          # human can read is a database a human can debug after a bad night
+          # in a gym. Changing this later is a data migration, not a setting.
+          store_date_time_values_as_text: true
+
+          # Every `switch` over a generated row stays exhaustive.
+          named_parameters: true

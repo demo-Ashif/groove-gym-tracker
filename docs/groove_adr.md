@@ -1,9 +1,11 @@
 # Groove — App Design & Architecture Document (ADR)
 
-**Version:** 2.0 · **Date:** 16 Aug 2026 · **Platform:** Flutter (iOS 15+ / Android 8+, API 26)
+**Version:** 2.1 · **Date:** 16 Aug 2026 · **Platform:** Flutter (iOS 15+ / Android 8+, API 26)
 **Bundle / Application ID:** `lab.aether.groove` · **Display name:** Groove
 **Backend:** Supabase (Postgres + Storage + anonymous auth) · **Mode:** offline-first, single user, production-grade
 
+> **Changes from v2.0:** State management moved from Riverpod to **BLoC/Cubit + get_it**, to match the rest of the aether.lab Flutter codebase; §15 kept its shared `domain/` + `data/` layers with presentation sliced per feature, and was rewritten to the structure actually built; brand typeface pinned to bundled **Outfit** rather than Inter; `synthetic-package` dropped from `l10n.yaml` (removed upstream in Flutter 3.41); §4.2 row ids pinned to **uuid v7**, with **deterministic v5 ids for seeded system rows**; `core` added to the §4.3 movement-pattern list.
+>
 > **Changes from v1.0:** Supabase added as the remote store behind an offline-first sync layer; all primary keys moved from `int` to client-generated `uuid`; full localization architecture added (English at launch, zero-refactor path to more locales); formal app identity, flavors and release engineering; production hardening (observability, testing, migrations, CI).
 
 ---
@@ -16,7 +18,7 @@
 4. [Domain Model](#4-domain-model)
 5. [Backend Architecture (Supabase)](#5-backend-architecture-supabase)
 6. [Sync Engine](#6-sync-engine)
-7. [Plan Ingestion (Voice / Text / Paste)](#7-plan-ingestion-voice--text--paste)
+7. [Plan Ingestion (deferred)](#7-plan-ingestion-deferred)
 8. [Scheduling & Cycles](#8-scheduling--cycles)
 9. [The Logging Loop (tap-first, type-last)](#9-the-logging-loop-tap-first-type-last)
 10. [Check-ins & Reassessment](#10-check-ins--reassessment)
@@ -68,7 +70,7 @@ Both Android and iOS accept `aether.lab.groove` too — it's syntactically legal
 
 ### 1.3 Elevator pitch
 
-Groove turns a coach-written training plan — pasted, dictated or typed — into a day-by-day checklist you tap through at the gym. It records what you actually did against what was prescribed, and rolls it into adherence, strength and body-composition trends filterable by day, week, month or training cycle.
+Groove turns a coach-written training plan — entered in the program builder — into a day-by-day checklist you tap through at the gym. It records what you actually did against what was prescribed, and rolls it into adherence, strength and body-composition trends filterable by day, week, month or training cycle.
 
 ---
 
@@ -85,7 +87,7 @@ Groove turns a coach-written training plan — pasted, dictated or typed — int
 
 ### 2.2 Out of scope for v1
 
-Social features, exercise video library, AI form checking, multi-user/teams, subscriptions, marketing onboarding carousel, Apple Watch app. (Locales beyond English are *out of scope but not out of architecture* — see §12.)
+Social features, exercise video library, AI form checking, multi-user/teams, subscriptions, marketing onboarding carousel, Apple Watch app, **voice capture of any kind, and automated plan parsing** (see §7). (Locales beyond English are *out of scope but not out of architecture* — see §12.)
 
 ---
 
@@ -95,7 +97,7 @@ Social features, exercise video library, AI form checking, multi-user/teams, sub
 |---|---|---|
 | Language | Dart 3.x — records, patterns, sealed classes | Exhaustive `switch` over session status / block kinds / sync states. |
 | UI | Flutter, Material 3, Impeller | Themed far enough that it won't read as stock Material. |
-| State | **Riverpod v2 + `riverpod_generator`** (`Notifier` / `AsyncNotifier` / `StreamNotifier`) | The app is a graph of derived state (plan → today → live log → adherence → charts). A set toggle should rebuild one row, not a screen. |
+| State | **BLoC / Cubit** (`flutter_bloc`) + **`get_it`** for injection | Standardised on across the aether.lab Flutter apps, so patterns and review habits transfer. Cubit for most screens; full BLoC where events carry meaning and a traceable transition stream is worth it. Fine-grained rebuilds come from `BlocSelector` / `buildWhen` rather than provider granularity — a set toggle still has to rebuild one row, not a screen. |
 | Local DB | **Drift** (SQLite) — source of truth | Insights are relational time-series aggregation. Typed SQL + reactive `Stream` queries mean charts recompute themselves on write. |
 | Remote | **Supabase** — Postgres, Storage, Realtime, anonymous Auth | Durable backup, multi-device path, and a real RLS boundary. Reached only through the sync layer. |
 | Sync | Custom outbox + pull-since engine (§6) | No off-the-shelf Flutter↔Supabase offline sync is mature enough to bet ten weeks of logs on. The engine is ~400 lines and fully testable. |
@@ -103,8 +105,6 @@ Social features, exercise video library, AI form checking, multi-user/teams, sub
 | Modelling | `freezed` for state/unions; `json_serializable` **data layer only**; pure domain entities | `dart run build_runner build --delete-conflicting-outputs`. |
 | Localization | `flutter_localizations` + `gen_l10n` + ARB | §12. |
 | Charts | `fl_chart` | Theme-able to tokens; custom painters where needed. |
-| Voice | `speech_to_text` (on-device) | Capture only; interpretation is separate. |
-| Plan parsing | Heuristic markdown parser + optional Anthropic Messages API | §7. |
 | Secrets | `flutter_secure_storage` | API keys, Supabase session. Never in `SharedPreferences`, never in source. |
 | Prefs | `shared_preferences` | Theme mode, locale override, last tab. Non-sensitive only. |
 | Notifications | `flutter_local_notifications` + `timezone` | Session reminder, check-in due, rest timer. |
@@ -141,7 +141,7 @@ Every syncable table carries these columns, in both SQLite and Postgres:
 
 | col | type | purpose |
 |---|---|---|
-| `id` | `uuid` (text in SQLite), **client-generated** | Offline row creation must not wait on a server sequence. v4 is fine; v7 is better (time-ordered → index locality). |
+| `id` | `uuid` (text in SQLite), **client-generated** | Offline row creation must not wait on a server sequence. **Implemented as v7** — time-ordered, so inserts land at the right edge of the primary-key index. Seeded system rows are the exception: their ids are **v5 of (fixed namespace, `name_key`)**, so every device and `supabase/seed.sql` independently derive the same id and a shared catalog actually merges. |
 | `owner_id` | `uuid` | The anonymous auth user. RLS predicate. |
 | `created_at` | timestamptz | |
 | `updated_at` | timestamptz | Conflict resolution + pull cursor. |
@@ -152,11 +152,17 @@ Every syncable table carries these columns, in both SQLite and Postgres:
 ### 4.3 Tables
 
 **`exercises`** — the canonical catalog. *The single most important table.* Every set ever logged points here, so "RDL over 10 weeks" survives across programs, phases and renamings.
-`id, name_key, custom_name?, aliases (json), pattern (hinge|squat|push|pull|carry|rotation|plyo|conditioning|mobility), load_type (barbell|dumbbellPerHand|kettlebell|machine|cable|bodyweight|band|time|distance), is_unilateral, primary_muscles (json), is_system`
+`id, name_key, custom_name?, aliases (json), pattern (hinge|squat|push|pull|carry|rotation|core|plyo|conditioning|mobility), load_type (barbell|dumbbellPerHand|kettlebell|machine|cable|bodyweight|band|time|distance), is_unilateral, primary_muscles (json), is_system`
 
-> `name_key` vs `custom_name`: seeded system exercises store a **translation key** (`ex.romanian_deadlift`) so the catalog localizes for free; user-created ones store literal text. See §12.4.
+> `name_key` vs `custom_name`: seeded system exercises store a **translation key** so the catalog localizes for free; user-created ones store literal text. A `CHECK` constraint enforces that exactly one is set — a row with neither renders as blank text in a chart legend months later. See §12.4.
+>
+> Keys are ARB identifiers (`exRomanianDeadlift`), not dotted paths: `gen_l10n` generates Dart getters, and `ex.romanian_deadlift` is not a valid one. They resolve through a compile-checked `switch` in `exerciseDisplayName`, so a key with no ARB entry fails the build rather than rendering blank at runtime.
+>
+> `core` was added to the pattern list during implementation. Anti-extension trunk work — planks, dead bugs, ab wheel — has no honest home among the original nine: `rotation` covers anti-rotation only, and filing a plank under `carry` would poison the volume-by-pattern chart the field exists to feed.
 
-**`programs`** — `id, name, start_date, end_date?, is_active, notes`
+**`programs`** — `id, name, start_date, end_date?, is_active, notes, schedule_pattern? (json)`
+
+> `schedule_pattern` holds the repeating pattern from §8.1, so a re-commit after a plan edit regenerates the calendar without asking the user to redraw the week strip. Written only by a schedule commit — renaming a program must not silently discard its calendar.
 
 **`phases`** — `id, program_id, name, order_index, start_week, end_week, target_session_minutes, rpe_low, rpe_high, check_in_due_at_end`
 
@@ -193,7 +199,7 @@ Every syncable table carries these columns, in both SQLite and Postgres:
 ### 4.4 Derived values
 
 - **e1RM** — Epley `w × (1 + reps/30)`, only for `reps ≤ 12` and loadable types. Primary strength trend, because rep ranges shift by design across cycles (4×8 → 5×5 → top-set 3s) and raw weight alone reads as noise.
-- **Session tonnage** — `Σ (weight × reps × sideMultiplier)`; dumbbells count both hands.
+- **Session tonnage** — `Σ (weight × reps × multiplier)`. The multiplier is **either** the unilateral one **or** the load-type one, never both: a unilateral exercise logged as `both` counts twice (once per side), a bilateral dumbbell exercise counts both hands, and a single-arm dumbbell row — one dumbbell, one hand — counts once per side rather than four times.
 - **Adherence** — `completedPlannedSets / totalPlannedSets` at session / week / phase. Skipped-with-reason is broken out from silently-missed so a bad week is legible.
 
 ---
@@ -242,7 +248,6 @@ Plus, on every table: index on `(owner_id, updated_at)` for the pull cursor, ind
 |---|---|---|
 | Row storage | Postgres | |
 | Progress photos | Supabase Storage, **private bucket**, path `{owner_id}/{check_in_id}/{front\|side}.jpg` | Signed URLs only, ~60s TTL. Never a public bucket. |
-| Plan parsing via Anthropic | **Edge Function** (`parse-plan`) | Keeps the Anthropic key server-side instead of in an extractable client binary. This is the main reason to have a backend at all beyond storage. |
 | Aggregation | **Client-side (Drift)** | Insights must work offline. Do not move aggregation to Postgres views — you'd break principle 3. |
 | Migrations | Supabase CLI, versioned SQL in `supabase/migrations/`, committed to the repo | Never click-edit schema in the dashboard; local and remote schemas must move together. |
 
@@ -283,69 +288,22 @@ A single unobtrusive status in Settings and a hairline indicator on the Today ap
 
 ---
 
-## 7. Plan Ingestion (Voice / Text / Paste)
+## 7. Plan Ingestion (deferred)
 
-Three entry points, one pipeline, one review gate.
+**Not in scope, and no code for it exists.** Voice capture, markdown paste,
+dictation, the `ParsePlanService` pipeline and the `parse-plan` Edge Function
+are all deferred. Programs are created in the manual builder (§19 Phase 1,
+step 3), which is shipped and is the only supported path.
 
-```
-[ Paste markdown ]                          ┌──────────────────┐
-[ Dictate (speech_to_text) ] ──> raw text ──>│ ParsePlanService │──> ParsedPlan (JSON)
-[ Type in-app ]                             └──────────────────┘        │
-                                                                        ▼
-                                                   ┌────────────────────────────────┐
-                                                   │ Review & Fix (editable)        │
-                                                   │ confidence flags, exercise      │
-                                                   │ matching, unresolved items      │
-                                                   └────────────────────────────────┘
-                                                                        │ commit
-                                                                        ▼
-                                                     Program + Phases + Templates + Schedule
-```
+Two pieces of groundwork stay, because both are cheap to carry and awkward to
+retrofit into a table that already has rows:
 
-### 7.1 Two parsers behind one interface
+- `exercises.aliases` — alternate spellings, seeded but unread.
+- `ExerciseRepository.findByText` — literal name and alias lookup.
 
-- **`HeuristicPlanParser`** (default) — regex over markdown tables (`| # | Exercise | Sets × Reps | Rest | Notes |`), headings for phases and days, `N × M` set-rep patterns. Deterministic, offline, free, and it handles the exact format your plans arrive in. **Build this one first.**
-- **`LlmPlanParser`** — calls the `parse-plan` Edge Function (§5.3), which holds the Anthropic key and enforces the JSON schema. System prompt: *"Return ONLY valid JSON matching this schema. No prose, no fences."* Strip stray fences defensively before decode; on failure retry once with the error appended, then fall back to heuristic.
-
-### 7.2 Target schema (abridged)
-
-```json
-{
-  "program": { "name": "string", "startDate": "YYYY-MM-DD", "weeks": 10 },
-  "phases": [{
-    "name": "Cycle 1 — Foundation",
-    "startWeek": 2, "endWeek": 4,
-    "targetSessionMinutes": 90, "rpeLow": 6.0, "rpeHigh": 7.5,
-    "sessions": [{
-      "code": "A", "title": "Push + Core", "dayOfWeek": 7,
-      "blocks": [{
-        "kind": "main", "targetMinutes": 55,
-        "exercises": [{
-          "name": "Landmine press (single-arm)",
-          "sets": 4, "repsMin": 8, "repsMax": 8, "perSide": true,
-          "restSeconds": 90,
-          "progression": { "type": "linearWeekly", "incrementKg": 2.5 },
-          "confidence": 0.93
-        }]
-      }]
-    }]
-  }],
-  "unresolved": ["'Rotary torso machine' — no catalog match"]
-}
-```
-
-### 7.3 Exercise resolution
-
-Exact match → alias match → normalized (lowercase, strip parentheticals and equipment words) → trigram similarity ≥ 0.75. Below threshold, the review screen shows a chip: **[ Rotary torso machine ]** → *Match to existing* / *Create new*. Confirming a match writes an alias, so the catalog gets smarter with every import.
-
-### 7.4 Voice, specifically
-
-Voice is **capture, not command**:
-
-1. **Plan dictation** — long-form, one shot, into the parser. Live waveform + interim transcript, editable before parsing.
-2. **In-session quick log** — mic FAB: *"sixty kilos, eight reps, RPE seven"*. Parsed by a **small local grammar** (numbers + unit keywords + rpe), never over the network. Pre-fills the active set for one-tap confirmation; low confidence opens the stepper with what it heard rather than guessing silently.
-
-**Never** put a network round-trip between "user speaks" and "set is recorded."
+Revisit if manual entry ever becomes the bottleneck. Until then this section is
+a record of a decision not taken, which is why it keeps its number rather than
+being deleted.
 
 ---
 
@@ -355,15 +313,19 @@ Voice is **capture, not command**:
 
 One sheet after parsing: **start date**, **cadence type**, **training days**.
 
-- **Weekly** — repeating day-of-week pattern (your case: Sun–Thu gym, Fri rest, Sat cricket).
-- **Monthly** — day-of-month or Nth-weekday recurrence.
-- **Custom cycle** — "N days on / M days off" rotation, or a hand-drawn mini-calendar pattern.
+- **Weekly** — repeating day-of-week pattern (your case: Sun–Thu gym, Fri rest, Sat cricket). *Implemented, with the week strip.*
+- **Custom cycle** — "N days on / M days off" rotation. *Implemented in the domain and tested; no UI yet, so it is currently unreachable from the app.*
+- **Monthly** — day-of-month or Nth-weekday recurrence. *Not implemented.* `SchedulePattern` is sealed, so adding it is a compile error at every consumer rather than a silently unhandled case.
+
+**A day assignment names a session code ("A"), never a template id.** Each phase has its own Day A, so an assignment pointing at a template id would keep sending week 5 to phase 1's session. The materializer resolves the code inside whichever phase covers the week; a code that phase doesn't define becomes a rest day.
 
 Days are picked on a **7-chip week strip**: tap a chip, pick Day A–E from a bottom sheet. Zero typing.
 
 ### 8.2 Materialization & drift
 
+- **Weeks are counted from the start date, not the calendar week.** Week 1 is the first seven days of the program, so a block beginning on a Wednesday runs Wed–Tue. Aligning to calendar weeks would make week 1 a two-day stub and every adherence percentage computed against it a lie.
 - **Missed a day** stays `skipped` and does **not** cascade-shift. Adherence tells the truth.
+- **A re-commit never rewrites two things:** any day before today, and any day the user has touched (started, finished, skipped, or converted). Everything else is replaced wholesale; a day that already matches is not written at all, so an unchanged pattern produces an empty diff.
 - **Cricket overrides gym** (your Rule 5) is a first-class action: *Convert to cricket day*, reason stored, so a light week reads as intentional.
 - **Reschedule** by long-press → drag within the week. Cross-week moves warn about phase boundaries.
 - **Plan edits apply forward only.** Editing a template affects future scheduled sessions; completed logs are immutable. Absolute rule — history must not lie.
@@ -399,9 +361,15 @@ Landmine press (single-arm) · 4 × 8 · rest 90s        prev: 25 kg × 8 @7
 - **"✓ all as planned"** → completes the exercise at target values. This is why a good session can be ~10 taps.
 - Final set **auto-starts the rest timer** — slim progress bar under the app bar, local notification + haptic if backgrounded.
 
+**Implemented in Phase 1:** tap-to-log with progression pre-fill, long-press editor (weight/reps steppers + RPE dots, no keyboard), swipe-left skip with reason, "all as planned", and the rest timer. Substitution (swipe right) is modelled in the schema but has no UI yet.
+
+**Rest is stored as the moment it started, never as a running counter.** The ticker only decides when to repaint; elapsed time is always read from the clock, so an app suspended mid-rest comes back finished rather than resuming where it paused.
+
 ### 9.3 Finalize
 
-One sheet: session RPE (6 dots), energy (5 faces), optional note (voice or text, both optional). Then a summary — sets completed, tonnage, duration, PRs detected — and a single sync push.
+**How a day settles:** nothing logged is `skipped` — starting a session and walking out is not a partial workout. Otherwise `completed` at two thirds of the prescribed sets or more, `partial` below it. One constant, in `settleStatus`, rather than a rule scattered across screens.
+
+One sheet: session RPE (6 dots), energy (5 faces), optional note. Then a summary — sets completed, tonnage, duration, PRs detected — and a single sync push.
 
 ### 9.4 Interruption safety
 
@@ -438,7 +406,7 @@ Weight delta, adherence %, tonnage change, top-5 lifts' e1RM change, and a plain
 
 ### 11.1 Global filter
 
-A persistent segmented control: **Day · Week · Month · Cycle · All**. Single Riverpod provider; every chart watches it. Range navigation by horizontal swipe on the chart itself.
+A persistent segmented control: **Day · Week · Month · Cycle · All**. One app-scoped `InsightsRangeCubit`; every chart card reads it through a `BlocSelector` so changing the range doesn't rebuild the whole tab. Range navigation by horizontal swipe on the chart itself.
 
 ### 11.2 Cards, in priority order
 
@@ -454,7 +422,7 @@ A persistent segmented control: **Day · Week · Month · Cycle · All**. Single
 
 ### 11.3 Query strategy
 
-All aggregation in **SQL views / Drift queries**, exposed as `Stream`s wrapped in `.autoDispose` `AsyncNotifier`s. Never aggregate full history in Dart on the UI thread. Precompute into `weekly_summaries` on finalize once history grows past a year.
+All aggregation in **SQL views / Drift queries**, consumed as `Stream`s by screen-scoped cubits (subscription cancelled in `close()`). Never aggregate full history in Dart on the UI thread. Precompute into `weekly_summaries` on finalize once history grows past a year.
 
 ### 11.4 Chart quality bar
 
@@ -477,19 +445,23 @@ template-arb-file: app_en.arb
 output-localization-file: app_localizations.dart
 output-class: L10n
 nullable-getter: false
-synthetic-package: false
 output-dir: lib/l10n/generated
 ```
+
+> `synthetic-package: false` is **not** listed: the flag is deprecated in Flutter 3.41 and cannot be enabled, so setting `output-dir` is now the whole story.
 
 ```dart
 MaterialApp.router(
   localizationsDelegates: L10n.localizationsDelegates,
   supportedLocales: L10n.supportedLocales,   // [en] today
-  locale: ref.watch(localeProvider),          // null = follow system
+  locale: switch (state.preferences.localeCode) {
+    final code? => Locale(code),
+    null => null,                            // follow system
+  },
 )
 ```
 
-`localeProvider` reads a persisted override from prefs; `null` means follow the system. The Settings language row exists from v1 and simply shows one option — so the plumbing is proven, not theoretical.
+`PreferencesCubit` reads a persisted override from `shared_preferences`; `null` means follow the system. The Settings language row exists from v1 and simply shows one option — so the plumbing is proven, not theoretical.
 
 ### 12.2 Non-negotiable rules
 
@@ -550,7 +522,7 @@ Separate dark surfaces by **tone**, never by black drop-shadow. Shadows ≤12% o
 
 ### 13.3 Typography
 
-Body/UI: **Inter** (or system). Numerals everywhere: **`FontFeature.tabularFigures()`** — non-negotiable in a tracker; proportional digits make weight columns wobble as they update.
+Body/UI: **Outfit**, bundled as assets (offline-safe first frame; it ships `tnum`). Numerals everywhere: **`FontFeature.tabularFigures()`** — non-negotiable in a tracker; proportional digits make weight columns wobble as they update.
 
 | Style | Size / weight | Use |
 |---|---|---|
@@ -617,76 +589,75 @@ Global toggle in Settings; honour `MediaQuery.disableAnimations` by dropping to 
 
 ### 14.4 Performance guardrails
 
-Set chips `const` where possible, rebuilt via `ref.watch(...select(...))` on a single set's state. `RepaintBoundary` around charts and the rest timer. Every `AnimationController`, `PageController`, `TextEditingController`, `FocusNode`, `Timer` and `StreamSubscription` disposed — a leak is a bug, not a nicety.
+Set chips `const` where possible, rebuilt via `BlocSelector` on a single set's state. `RepaintBoundary` around charts and the rest timer. Every `AnimationController`, `PageController`, `TextEditingController`, `FocusNode`, `Timer` and `StreamSubscription` disposed — a leak is a bug, not a nicety.
 
 ---
 
 ## 15. Project Structure
 
+**Shared domain and data, feature-sliced presentation.** The entity graph is one interconnected relational model — `exercises` ← `set_logs` ← `session_logs` ← `scheduled_sessions` ← templates — and nearly every table is read by more than one tab. Slicing that graph per feature would mean Insights importing `active_session`'s data layer to chart a set. So the model is shared and only the UI is sliced.
+
 ```
 lib/
+├── main.dart                     # dev entrypoint (convenience)
 ├── main_dev.dart / main_stg.dart / main_prod.dart   # flavor entrypoints
-├── bootstrap.dart                                    # shared init + runZonedGuarded
+├── bootstrap.dart                # flavor pin, error handlers, DI, runApp
 ├── app/
 │   ├── app.dart                  # MaterialApp.router, theme + l10n wiring
-│   ├── router.dart               # go_router typed routes
-│   └── env.dart                  # AppEnv: supabaseUrl, anonKey, flavor
+│   ├── router/{app_routes, app_router}.dart         # go_router, StatefulShellRoute
+│   ├── shell/app_shell.dart      # 4-tab bottom nav
+│   └── theme/                    # app_tokens, groove_palette,
+│                                 # app_semantic_colors, app_typography, app_theme
 ├── l10n/
 │   ├── arb/app_en.arb
 │   └── generated/                # gitignored, built by gen_l10n
-├── core/
-│   ├── design/
-│   │   ├── tokens.dart           # colors, spacing, radii, durations
-│   │   ├── theme.dart
-│   │   └── widgets/              # AppCard, SetChip, StepperField, RulerPicker,
-│   │                             # RpeDots, AdherenceRing, EmptyState,
-│   │                             # ErrorState, Skeleton, SyncBadge
-│   ├── haptics.dart
-│   ├── formatters.dart           # locale-aware number/date/duration
-│   ├── result.dart
-│   └── extensions/
+├── core/                         # feature-agnostic infrastructure
+│   ├── config/                   # AppEnvironment, AppConfig
+│   ├── di/injector.dart          # get_it registrations
+│   ├── error/                    # AppException -> Failure -> Result
+│   ├── logging/app_logger.dart   # levels + 500-line ring buffer (§17.1)
+│   ├── haptics/app_haptics.dart  # §14.3 vocabulary, throttled, toggleable
+│   └── utils/                    # formatters (locale-aware), responsive, extensions
+├── domain/                       # pure: no drift, no JSON, no Flutter
+│   ├── entities/                 # Exercise, Program, SetLog, AppPreferences, …
+│   ├── enums/training_enums.dart # the shared vocabulary
+│   ├── repositories/             # abstract interfaces
+│   └── services/                 # (Phase 1+) metrics, progression, pr, plan_parser
 ├── data/
 │   ├── db/
-│   │   ├── database.dart         # @DriftDatabase
-│   │   ├── tables/
-│   │   ├── daos/                 # PlanDao, LogDao, InsightsDao, CheckInDao, OutboxDao
-│   │   └── migrations/
-│   ├── remote/
-│   │   ├── supabase_client.dart
-│   │   ├── auth_service.dart     # anonymous sign-in, identity linking
-│   │   └── endpoints/            # per-table remote data sources
-│   ├── sync/
-│   │   ├── sync_service.dart
-│   │   ├── outbox.dart
-│   │   ├── pull_cursor.dart
-│   │   └── conflict_resolver.dart
+│   │   ├── app_database.dart     # @DriftDatabase + MigrationStrategy + seeding
+│   │   ├── migrations.dart       # one non-destructive step per schema version
+│   │   ├── pre_migration_snapshot.dart # full JSON backup taken before a step
+│   │   ├── tables/               # sync_columns (the §4.2 mixin), catalog, plan,
+│   │   │                         # log, check_in, sync
+│   │   ├── daos/                 # ExerciseDao, then PlanDao, LogDao, InsightsDao…
+│   │   └── seed/exercise_seed.dart
+│   ├── remote/                   # (Phase 2) supabase client, anonymous auth
+│   ├── sync/                     # (Phase 2) outbox, push/pull, cursor, conflicts
 │   ├── dto/                      # json_serializable lives ONLY here
-│   ├── mappers/                  # DTO <-> domain entity
+│   ├── mappers/                  # row/DTO <-> domain entity
 │   └── repositories/             # *RepositoryImpl
-├── domain/
-│   ├── entities/                 # pure
-│   ├── repositories/             # abstract interfaces
-│   └── services/
-│       ├── progression_service.dart
-│       ├── metrics_service.dart  # e1RM, tonnage, adherence
-│       ├── pr_service.dart
-│       └── plan_parser/
+├── shared/
+│   ├── l10n/exercise_name.dart   # key-or-literal name resolution (§12.4)
+│   └── widgets/                  # AppCard, AppPage, PageHeader, SectionLabel,
+│                                 # EmptyView, ErrorView, LoadingView, Skeleton*
 └── features/
-    ├── today/            {view, widgets, controller}
+    ├── today/presentation/{cubit, pages, widgets}
     ├── active_session/
-    ├── plan/{calendar, editor, import}
+    ├── plan/           {calendar, editor, import}
     ├── insights/
     ├── check_in/
     ├── records/
-    └── settings/
+    └── settings/       # the Profile tab: preferences, about, diagnostics
 
 supabase/
 ├── migrations/           # versioned SQL, committed
-├── functions/parse-plan/
-└── seed.sql              # exercise catalog
+└── seed.sql              # exercise catalog, ids derived through the same v5 namespace
 ```
 
-**Layering rule:** `features/*` may import `domain` and `core`, never `data`. Repository interfaces live in `domain`; implementations are injected via Riverpod overrides in `bootstrap.dart` — so every controller is unit-testable against a fake repo, and Supabase never leaks into a widget.
+**Layering rule:** `features/*` may import `domain`, `core` and `shared`, **never `data`**. Repository interfaces live in `domain`; implementations are registered in `core/di/injector.dart` and resolved with `get_it` — so every cubit is unit-testable against a fake repo, and neither Drift nor Supabase ever leaks into a widget.
+
+**Domain purity is literal:** nothing under `domain/` imports `package:drift`, `package:json_annotation` or `package:flutter`. That is what makes the entity graph portable across the local store and the remote one.
 
 ---
 
@@ -699,7 +670,8 @@ supabase/
 | `prod` | `lab.aether.groove` | Groove | `groove-prod` | on |
 
 - Three flavors installable side by side — you can keep a real logging history on prod while breaking dev.
-- Config via `--dart-define-from-file=env/dev.json`, read into `AppEnv`. **No secrets in `env/*.json`** beyond the Supabase URL + anon key (both public by design and protected by RLS). The Anthropic key never leaves the Edge Function.
+- Config compiled in from `core/config/app_env.dart`, read through `AppEnv`. No dart-defines and no `env/*.json` — the only values that vary are the Supabase URL + anon key, both public by design and protected by RLS, so a checked-in constant is simpler than a build-time define. The Anthropic key never leaves the Edge Function.
+- **iOS only:** Dev/Prod Xcode schemes select `Debug-Dev` / `Debug-Prod` (plus Release and Profile) build configurations, whose xcconfig sets `FLUTTER_TARGET`. This is scheme wiring, not a flavour: one application ID, one native build. `FLUTTER_TARGET` lives only in the xcconfig — a target-level copy would override it.
 - Android: `flavorDimensions "env"`, `applicationIdSuffix`, per-flavor `resValue` app label and icon (tint dev/stg icons so you can tell them apart on the home screen).
 - iOS: three schemes + xcconfigs; `PRODUCT_BUNDLE_IDENTIFIER` and `CFBundleDisplayName` per configuration.
 - Release builds: `--obfuscate --split-debug-info=build/symbols` (upload symbols to Sentry), R8 on Android, `--split-per-abi` or App Bundle.
@@ -720,10 +692,10 @@ supabase/
 
 | Layer | Tool | Must cover |
 |---|---|---|
-| Unit | `test` | `metrics_service` (e1RM edge cases: 0 reps, bodyweight, unilateral doubling), `progression_service`, both plan parsers against real plan fixtures |
-| DB | `drift` in-memory | **Every migration, step by step, with seeded data.** A bad migration is the one bug that destroys history. |
+| Unit | `test` | `metrics_service` (e1RM edge cases: 0 reps, bodyweight, unilateral doubling), `progression_service`, `schedule_materializer` |
+| DB | `drift` in-memory, plus a real file for migrations | **Every migration, step by step, from a committed old-schema fixture with real rows.** A bad migration is the one bug that destroys history. |
 | Sync | fakes | Outbox drains, retries, dedupes; conflict resolution; offline→online transition; crash between data write and outbox write |
-| Widget | `flutter_test` + `ProviderScope` overrides | Set chip states, empty/loading/error for every list, RTL and 1.4× text-scale golden tests |
+| Widget | `flutter_test` + `BlocProvider` overrides / `bloc_test` | Set chip states, empty/loading/error for every list, RTL and 1.4× text-scale golden tests |
 | Golden | `golden_toolkit` | Today, Active Session, Insights in light/dark |
 | Integration | `integration_test` | The full loop: create program → log a session → finalize → chart updates |
 
@@ -741,9 +713,9 @@ Analyzer clean, tests written, empty/loading/error states designed, dark + light
 - **Photos** default to **local-only**, in the app's private documents directory, referenced by *relative* path (iOS container paths change between builds — never persist absolute paths). Cloud photo sync is an explicit opt-in toggle; when on, private bucket + short-lived signed URLs only.
 - **No analytics, no ad SDKs, no third-party trackers.** Sentry is opt-in and scrubbed.
 - **Local JSON export remains a first-class feature**, not a fallback: full relational dump with `schemaVersion`, shared via `share_plus`, restorable with a preview-diff. Plus a **silent weekly auto-export** keeping the last 4. Supabase is not a backup strategy on its own — a bad migration or an RLS mistake propagates to the server too.
-- **Migrations** with explicit `MigrationStrategy` and a test per version step. `deleteOnSchemaChange` never leaves dev.
+- **Migrations never destroy data — in dev or in prod.** No `deleteOnSchemaChange`, no drop-and-recreate, no "pre-release reset": the device holds the only copy of the user's training. Steps live in `data/db/migrations.dart`, one `case` per version, each with a test in `test/data/migration_test.dart` that builds the **old** schema from a committed DDL fixture (`test/data/fixtures/schema_v<n>.sql`), fills it with rows, upgrades, and asserts the rows survived unchanged. A version with no step throws and leaves the database untouched, so a later build can still migrate it. Before any step runs, `PreMigrationSnapshot` writes every table to a timestamped JSON file in the documents directory (newest three kept) — the undo for a migration that turns out to be wrong.
 - **Supabase session** in `flutter_secure_storage`; auto-refresh on resume; a failed refresh must degrade to offline mode, never to a data-loss path or a login wall.
-- **Permission preambles** for mic, speech, photos, health — each with a graceful denied path, because every voice feature has a tap equivalent.
+- **Permission preambles** for photos and health — each with a graceful denied path.
 - If the app is ever published: the anonymous-auth identity plus health-adjacent data means a privacy policy URL, an App Store privacy label (Health & Fitness, Identifiers, Photos), and a working account-deletion path — Apple requires deletion, not just sign-out.
 
 ---
@@ -754,7 +726,7 @@ Analyzer clean, tests written, empty/loading/error states designed, dark + light
 
 1. Flavors, app identity, theme tokens, l10n scaffold, CI. **First commit, not later** — this is the "production-grade" bill and it's cheapest now.
 2. Drift schema with UUID keys + sync columns + seeded catalog (~120 exercises covering your plan).
-3. Manual program builder (phases → sessions → blocks → exercises). **Before the parser** — the parser writes into this model, so it must exist and be right first.
+3. Manual program builder (phases → sessions → blocks → exercises). The only way a program gets created (§7).
 4. Week-strip day assignment + schedule materialization.
 5. **Active session screen**: set chips, steppers, RPE dots, rest timer, crash-safe persistence.
 6. Today + finalize + summary.
@@ -769,22 +741,18 @@ Analyzer clean, tests written, empty/loading/error states designed, dark + light
 10. Sync status surfacing + Settings diagnostics.
 11. Storage bucket + opt-in photo sync.
 
-### Phase 3 — Ingestion & insight
+### Phase 3 — Insight
 
-12. Heuristic markdown parser → review screen → commit.
-13. `parse-plan` Edge Function + LLM parser behind the same interface.
-14. Voice dictation for plan capture.
-15. Insights tab with the Day/Week/Month/Cycle filter.
-16. Check-ins, metric definitions, phase report.
+12. Insights tab with the Day/Week/Month/Cycle filter.
+13. Check-ins, metric definitions, phase report.
 
 ### Phase 4 — Leverage
 
-17. PR detection + Records + celebration moment.
-18. Progression rules auto-prefilling next week's targets.
-19. In-session voice quick-log (local grammar).
-20. Notifications: session reminder, check-in due, rest timer.
-21. Health / Health Connect read for weight + steps.
-22. Home-screen widget: today's session, one-tap start.
+14. PR detection + Records + celebration moment.
+15. Progression rules auto-prefilling next week's targets.
+16. Notifications: session reminder, check-in due, rest timer.
+17. Health / Health Connect read for weight + steps.
+18. Home-screen widget: today's session, one-tap start.
 
 ### Phase 5 — If it earns it
 
@@ -818,7 +786,6 @@ Identity linking (email/Apple) + true multi-device with Realtime, Apple Watch co
 | Custom sync engine | PowerSync / Realtime-as-sync | Purpose-built beats a heavy dependency for ~10 tables; PowerSync is worth revisiting only if multi-device gets serious. |
 | Client UUIDs, soft deletes | Server sequences, hard deletes | Offline creation and delete propagation. |
 | Aggregation client-side | Postgres views | Insights must work offline. |
-| Edge Function for LLM parsing | Client-side API key | An API key in a shipped binary is an extracted API key. |
 | `gen_l10n` + ARB | `easy_localization`, `slang` | First-party, compile-checked, no runtime key failures. |
 | `lab.aether.groove` | `aether.lab.groove` | Correct reverse-DNS. |
 | e1RM as primary strength metric | Raw top weight | Rep ranges shift by design across cycles. |

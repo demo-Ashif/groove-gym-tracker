@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home-screen label, referenced by android:label in AndroidManifest.xml.
+         Previously generated per flavor with resValue(); now a plain resource
+         because there is a single build variant. -->
+    <string name="app_name">Groove</string>
+</resources>
